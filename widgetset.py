@@ -187,7 +187,6 @@ class ColourPickerImageButton(html.BUTTON):
         if id: self.id = id
     
     def onClick(self, event):
-        global colourpickerdialog
         colourpickerdialog.returnaction = self.returnaction
         colourpickerdialog.show()
     

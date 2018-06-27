@@ -1,5 +1,6 @@
 from browser import document, window, ajax, alert, confirm
 import browser.html as html
+import os
 
 def delete(element):
     element.parentNode.removeChild(element)
@@ -470,7 +471,7 @@ class FileDialog(DialogBox):
         request.send({"folder":folder})
     
     def populatebox(self, request):
-        print ("Response", request.text, len(request.text))
+        #print ("Response", request.text, len(request.text))
         folderlist, filelist = request.text.strip().split(chr(30))
         self.folderlist = folderlist.split(chr(31))
         self.filelist = [filename for filename in filelist.split(chr(31)) if filename.split(".")[-1] in self.extlist]
@@ -509,7 +510,7 @@ class FileOpenDialog(FileDialog):
         if filename in self.folderlist:
             self.getfilelist(filepath)
         else:
-            print (filepath)
+            #print (filepath)
             f = open(filepath).read()
             self.path.pop()
             if filesavedialog:
@@ -536,7 +537,7 @@ class FileSaveDialog(FileDialog):
         if filename in self.folderlist:
             self.getfilelist(filepath)
         else:
-            print (filepath)
+            #print (filepath)
             if filename in self.filelist:
                 response = confirm("File exists. Overwrite?")
                 if response is False:
@@ -551,7 +552,7 @@ class FileSaveDialog(FileDialog):
     def autosave(self):
         self.path.append(self.filename)
         filepath = "/".join(self.path)
-        print (filepath)
+        #print (filepath)
         self.savefile(filepath, self.filetosave)
         self.path.pop()
         self.hide()
@@ -565,7 +566,7 @@ class FileSaveDialog(FileDialog):
         request.send({"filepath":filepath, "filetosave":filetosave})
 
     def closedialog(self, request):
-        print (request.text)
+        #print (request.text)
         self.hide()
 
 class ColourPickerDialog(DialogBox):
@@ -627,6 +628,7 @@ class ColourPickerDialog(DialogBox):
         self.hide()
         self.returnaction("rgb({}, {}, {})".format(*self.colour))
 
+#print ("Current directory:", os.getcwd())
 colourpickerdialog = ColourPickerDialog()
 fileopendialog = FileOpenDialog(["tmk", "tsm"])
 filesavedialog = FileSaveDialog(["tmk", "tsm"])

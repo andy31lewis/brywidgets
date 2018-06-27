@@ -171,6 +171,8 @@ class ColourPickerButton(html.BUTTON):
         self.returnaction = returnaction
     
     def onClick(self, event):
+        global colourpickerdialog
+        if not colourpickerdialog: colourpickerdialog = ColourPickerDialog()
         colourpickerdialog.setupfromcolour(self.style.backgroundColor)
         colourpickerdialog.returnaction = self.onChange
         colourpickerdialog.show()
@@ -188,45 +190,52 @@ class ColourPickerImageButton(html.BUTTON):
         if id: self.id = id
     
     def onClick(self, event):
+        global colourpickerdialog
+        if not colourpickerdialog: colourpickerdialog = ColourPickerDialog()
         colourpickerdialog.returnaction = self.returnaction
         colourpickerdialog.show()
     
 class FileOpenButton(html.BUTTON):
-    def __init__(self, icon, returnaction, initialfolder=".", id=None):
+    def __init__(self, icon, returnaction, extlist=[], initialfolder=".", id=None):
         html.BUTTON.__init__(self, html.IMG(src=icon), type="button", title="Open File...", id=id, Class="imagebutton")
         self.bind("click", self.onClick)
+        self.extlist = extlist
         self.initialfolder = initialfolder
         self.returnaction = returnaction
         if id: self.id = id
     
     def onClick(self, event):
+        global fileopendialog
+        if not fileopendialog: fileopendialog = FileOpenDialog(self.extlist)
         fileopendialog.returnaction = self.returnaction
         fileopendialog.open(self.initialfolder)
     
 class FileSaveAsButton(html.BUTTON):
-    def __init__(self, icon, preparefile, returnaction, initialfolder=".", id=None):
-        html.BUTTON.__init__(self, html.IMG(src=icon), type="button", title="Save File As...", id=id, Class="imagebutton")
+    def __init__(self, icon, preparefile, returnaction, extlist=[], initialfolder=".", id=None):
+        html.BUTTON.__init__(self, html.IMG(src=icon), type="button", id=id, Class="imagebutton")
+        self.title="Save File As..."
         self.bind("click", self.onClick)
+        self.extlist = extlist
         self.initialfolder = initialfolder
         self.preparefile = preparefile
         self.returnaction = returnaction
         if id: self.id = id
     
     def onClick(self, event):
+        global filesavedialog
+        if not filesavedialog: filesavedialog = FileSaveDialog(self.extlist)
         filesavedialog.filetosave = self.preparefile()
         filesavedialog.returnaction = self.returnaction
         filesavedialog.open(self.initialfolder)
     
-class FileSaveButton(html.BUTTON):
-    def __init__(self, icon, preparefile, returnaction, initialfolder=".", id=None):
-        html.BUTTON.__init__(self, html.IMG(src=icon), type="button", title="Save File", id=id, Class="imagebutton")
-        self.bind("click", self.onClick)
-        self.initialfolder = initialfolder
-        self.preparefile = preparefile
-        self.returnaction = returnaction
-        if id: self.id = id
-    
+class FileSaveButton(FileSaveAsButton):
+    def __init__(self, icon, preparefile, returnaction, extlist=[], initialfolder=".", id=None):
+        FileSaveAsButton.__init__(self, icon, preparefile, returnaction, extlist, initialfolder, id)
+        self.title = "Save File"
+
     def onClick(self, event):
+        global filesavedialog
+        if not filesavedialog: filesavedialog = FileSaveDialog(self.extlist)
         filesavedialog.filetosave = self.preparefile()
         filesavedialog.returnaction = self.returnaction
         if filesavedialog.filename:
@@ -235,8 +244,8 @@ class FileSaveButton(html.BUTTON):
             filesavedialog.open(self.initialfolder)
     
 class UserFileOpenButton(FileOpenButton):
-    def __init__(self, icon, getuserfolder, returnaction, id=None):
-        FileOpenButton.__init__(self, icon, returnaction, id=id)
+    def __init__(self, icon, getuserfolder, returnaction, extlist=[], id=None):
+        FileOpenButton.__init__(self, icon, returnaction, extlist, id=id)
         self.getuserfolder = getuserfolder
     
     def onClick(self, event):
@@ -244,41 +253,39 @@ class UserFileOpenButton(FileOpenButton):
         if userfolder is None:
             alert("In order to save or open files, you need to log in.\nPlease click the login button.")
         else:
+            global fileopendialog
+            if not fileopendialog: fileopendialog = FileOpenDialog(self.extlist)
             fileopendialog.returnaction = self.returnaction
             fileopendialog.open(userfolder)
 
-class UserFileSaveAsButton(html.BUTTON):
-    def __init__(self, icon, getuserfolder, preparefile, returnaction, id=None):
-        html.BUTTON.__init__(self, html.IMG(src=icon), type="button", title="Save File As...", id=id, Class="imagebutton")
-        self.bind("click", self.onClick)
+class UserFileSaveAsButton(FileSaveAsButton):
+    def __init__(self, icon, getuserfolder, preparefile, returnaction, extlist=[], id=None):
+        FileSaveAsButton.__init__(self, icon, preparefile, returnaction, extlist, id=id)
         self.getuserfolder = getuserfolder
-        self.preparefile = preparefile
-        self.returnaction = returnaction
-        if id: self.id = id
     
     def onClick(self, event):
         userfolder = self.getuserfolder()
         if userfolder is None:
             alert("In order to save or open files, you need to log in.\nPlease click the login button.")
         else:
+            global filesavedialog
+            if not filesavedialog: filesavedialog = FileSaveDialog(self.extlist)
             filesavedialog.filetosave = self.preparefile()
             filesavedialog.returnaction = self.returnaction
             filesavedialog.open(userfolder)
     
-class UserFileSaveButton(html.BUTTON):
-    def __init__(self, icon, getuserfolder, preparefile, returnaction, id=None):
-        html.BUTTON.__init__(self, html.IMG(src=icon), type="button", title="Save File", id=id, Class="imagebutton")
-        self.bind("click", self.onClick)
+class UserFileSaveButton(FileSaveButton):
+    def __init__(self, icon, getuserfolder, preparefile, returnaction, extlist=[], id=None):
+        FileSaveButton.__init__(self, icon, preparefile, returnaction, extlist, id=id)
         self.getuserfolder = getuserfolder
-        self.preparefile = preparefile
-        self.returnaction = returnaction
-        if id: self.id = id
     
     def onClick(self, event):
         userfolder = self.getuserfolder()
         if userfolder is None:
             alert("In order to save or open files, you need to log in.\nPlease click the login button.")
         else:
+            global filesavedialog
+            if not filesavedialog: filesavedialog = FileSaveDialog(self.extlist)
             filesavedialog.filetosave = self.preparefile()
             filesavedialog.returnaction = self.returnaction
             if filesavedialog.filename:
@@ -492,18 +499,20 @@ class FileOpenDialog(FileDialog):
         self <= html.DIV(Button("Open", self.onopenbutton), id="buttondiv")
 
     def onfiledoubleclick(self, event):
+        global filesavedialog
         filename = event.target.text
         self.path.append(filename)
         filepath = "/".join(self.path)
         f = open(filepath).read()
         self.path.pop()
-        if filesavedialog:
-            filesavedialog.filename = filename
-            filesavedialog.path = self.path
+        if not filesavedialog: filesavedialog = FileSaveDialog(self.extlist)
+        filesavedialog.filename = filename
+        filesavedialog.path = self.path
         self.hide()
         self.returnaction(f, filename)
     
     def onopenbutton(self, event):
+        global filesavedialog
         filename = self.fileinput.value
         self.path.append(filename)
         filepath = "/".join(self.path)
@@ -513,9 +522,9 @@ class FileOpenDialog(FileDialog):
             #print (filepath)
             f = open(filepath).read()
             self.path.pop()
-            if filesavedialog:
-                filesavedialog.filename = filename
-                filesavedialog.path = self.path
+            if not filesavedialog: filesavedialog = FileSaveDialog(self.extlist)
+            filesavedialog.filename = filename
+            filesavedialog.path = self.path
             self.hide()
             self.returnaction(f, filename)
 
@@ -630,9 +639,9 @@ class ColourPickerDialog(DialogBox):
 
 #print ("Current directory:", os.getcwd())
 document.select("head")[0] <= html.LINK(rel="stylesheet", href="widgetset/widgetset.css", type="text/css")
-colourpickerdialog = ColourPickerDialog()
-fileopendialog = FileOpenDialog(["tmk", "tsm"])
-filesavedialog = FileSaveDialog(["tmk", "tsm"])
+colourpickerdialog = None
+fileopendialog = None
+filesavedialog = None
 logindialog = LoginDialog("In order to save or open files, you need to log in.<br />Please type your username below.")
 usernamedialog = UsernameDialog("Your username should consist of letters and numbers only.<br />Choose something which you will remember but other people will not guess")
 imagefromsvg = ImageFromSVG()

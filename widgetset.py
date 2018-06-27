@@ -629,9 +629,11 @@ class ColourPickerDialog(DialogBox):
         self.returnaction("rgb({}, {}, {})".format(*self.colour))
 
 #print ("Current directory:", os.getcwd())
+document.select("head")[0] <= html.LINK(rel="stylesheet", href="widgetset/widgetset.css", type="text/css")
 colourpickerdialog = ColourPickerDialog()
 fileopendialog = FileOpenDialog(["tmk", "tsm"])
 filesavedialog = FileSaveDialog(["tmk", "tsm"])
 logindialog = LoginDialog("In order to save or open files, you need to log in.<br />Please type your username below.")
 usernamedialog = UsernameDialog("Your username should consist of letters and numbers only.<br />Choose something which you will remember but other people will not guess")
 imagefromsvg = ImageFromSVG()
+#document.select("body")[0].style.visibility = "visible"

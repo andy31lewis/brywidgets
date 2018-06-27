@@ -295,8 +295,10 @@ class UserFileSaveButton(FileSaveButton):
     
 class LoginButton(html.BUTTON):
     def __init__(self, icon, checkuserexists, createusername, loguserin, id=None):
-        html.BUTTON.__init__(self, html.IMG(src=icon), type="button", title="Log In...", id=id, Class="imagebutton")
+        global logindialog
+        html.BUTTON.__init__(self, html.IMG(src=icon), type="button", title="Log In...", Class="imagebutton")
         self.bind("click", self.onClick)
+        if not logindialog: logindialog = LoginDialog("Please type your username below:")
         logindialog.checkuserexists = checkuserexists
         logindialog.createusername = createusername
         logindialog.loguserin = loguserin
@@ -304,6 +306,18 @@ class LoginButton(html.BUTTON):
     
     def onClick(self, event):
         logindialog.open()
+
+class ImageFromSVGButton(html.BUTTON):
+    def __init__(self, svgimage, id=None):
+        html.BUTTON.__init__(self, html.IMG(src="Buttons/Copy.bmp"), type="button", title="Copy or Save...", Class="imagebutton")
+        self.bind("click", self.onClick)
+        self.svgimage = svgimage
+
+    def onClick(self, event):
+        global imagefromsvg
+        if not imagefromsvg: imagefromsvg = ImageFromSVG()
+        imagefromsvg.show()
+        imagefromsvg.SVGtoPNG(self.svgimage)
 
 class Overlay(html.DIV):
     def __init__(self, contents):
@@ -389,9 +403,6 @@ class LoginDialog(DialogBox):
         self <= Button("Create username", self.openusernamedialog)
     
     def open(self):
-        #self.usernamelist = usernamelist
-        #self.loginhandler = loginhandler
-        #self.creationhandler = creationhandler
         self.show()
         self.loginbox.focus()
 
@@ -407,6 +418,10 @@ class LoginDialog(DialogBox):
             alert("Sorry - this username does not exist.")
             
     def openusernamedialog(self, event):
+        global usernamedialog
+        message = """Your username should consist of letters and numbers only.<br />
+        Choose something which you will remember but other people will not guess"""
+        if not usernamedialog: usernamedialog = UsernameDialog(message)
         self.hide()
         usernamedialog.open(self.checkuserexists, self.createusername)
         
@@ -642,7 +657,7 @@ document.select("head")[0] <= html.LINK(rel="stylesheet", href="widgetset/widget
 colourpickerdialog = None
 fileopendialog = None
 filesavedialog = None
-logindialog = LoginDialog("In order to save or open files, you need to log in.<br />Please type your username below.")
-usernamedialog = UsernameDialog("Your username should consist of letters and numbers only.<br />Choose something which you will remember but other people will not guess")
-imagefromsvg = ImageFromSVG()
+logindialog = None
+usernamedialog = None
+imagefromsvg = None
 #document.select("body")[0].style.visibility = "visible"

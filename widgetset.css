@@ -89,6 +89,10 @@
     height: 100%;
 }
 
+input {
+    margin: 0.5vmin;
+}
+
 .dropdown {
     font-size: 1em;
 }
@@ -96,7 +100,6 @@
 .spincontrol {
     width: 7vmin;
     height: 5vmin;
-    margin: 0.5vmin;
 }
 
 .overlay {
@@ -120,12 +123,13 @@
 
 .dialogbox {
     width: 33%;
-    height: 60%;
     position: relative;
     z-index: 1;
     margin: auto;
     top: 10%;
     background-color:lightgrey;
+    text-align: center;
+    padding-bottom: 0.5vmin;
 }
 
 .titlebar {
@@ -215,6 +219,7 @@
 }
 
 #filelistbox li {
+    text-align: left;
     list-style: none;
     padding: 0px 0px 0px 20px;
     margin: 0px;

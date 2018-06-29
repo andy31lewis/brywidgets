@@ -665,7 +665,7 @@ class ColourPickerDialog(DialogBox):
         self.returnaction("rgb({}, {}, {})".format(*self.colour))
 
 #print ("Current directory:", os.getcwd())
-document.select("head")[0] <= html.LINK(rel="stylesheet", href="widgetset/widgetset.css", type="text/css")
+document.select("head")[0] <= html.LINK(rel="stylesheet", href="brywidgets/widgetset.css", type="text/css")
 colourpickerdialog = None
 fileopendialog = None
 filesavedialog = None

@@ -145,10 +145,9 @@ class ImageButton(html.BUTTON):
         if id: self.id = id
 
 class ToggleButton(html.BUTTON):
-    def __init__(self, icon, selectedicon, handler, title=None, id=None):
+    def __init__(self, icon, handler, title=None, id=None):
         self.icon = html.IMG(src=icon)
-        self.selectedicon = html.IMG(src=selectedicon, style={"display":"none"})
-        html.BUTTON.__init__(self, self.icon+self.selectedicon, type="button", id=id, Class="togglebutton")
+        html.BUTTON.__init__(self, self.icon, type="button", id=id, Class="togglebutton")
         self._selected = None
         self.selected = False
         self.handler = handler
@@ -164,11 +163,11 @@ class ToggleButton(html.BUTTON):
     def selected(self, selected):
         self._selected = selected
         if self.selected:
-            self.icon.style.display = "none"
-            self.selectedicon.style.display = "block"
+            self.style.borderTopColor = self.style.borderLeftColor = "grey"
+            self.style.borderBottomColor = self.style.borderRightColor = "white"
         else:
-            self.selectedicon.style.display = "none"
-            self.icon.style.display = "block"
+           self.style.borderTopColor = self.style.borderLeftColor = "white"
+           self.style.borderBottomColor = self.style.borderRightColor = "grey"
 
     def onClick(self, event):
         self.selected = False if self.selected else True
@@ -208,8 +207,8 @@ class ColourPickerImageButton(html.BUTTON):
         colourpickerdialog.show()
     
 class FileOpenButton(html.BUTTON):
-    def __init__(self, icon, returnaction, extlist=[], initialfolder=".", id=None):
-        html.BUTTON.__init__(self, html.IMG(src=icon), type="button", title="Open File...", id=id, Class="imagebutton")
+    def __init__(self, returnaction, extlist=[], initialfolder=".", id=None):
+        html.BUTTON.__init__(self, html.IMG(src="brywidgets/Open.png"), type="button", title="Open File...", id=id, Class="imagebutton")
         self.bind("click", self.onClick)
         self.extlist = extlist
         self.initialfolder = initialfolder
@@ -223,9 +222,8 @@ class FileOpenButton(html.BUTTON):
         fileopendialog.open(self.initialfolder)
     
 class FileSaveAsButton(html.BUTTON):
-    def __init__(self, icon, preparefile, returnaction, extlist=[], initialfolder=".", id=None):
-        html.BUTTON.__init__(self, html.IMG(src=icon), type="button", id=id, Class="imagebutton")
-        self.title="Save File As..."
+    def __init__(self, preparefile, returnaction, extlist=[], initialfolder=".", id=None):
+        html.BUTTON.__init__(self, html.IMG(src="brywidgets/SaveAs.png"), type="button", title="Save File As...", id=id, Class="imagebutton")
         self.bind("click", self.onClick)
         self.extlist = extlist
         self.initialfolder = initialfolder
@@ -240,10 +238,15 @@ class FileSaveAsButton(html.BUTTON):
         filesavedialog.returnaction = self.returnaction
         filesavedialog.open(self.initialfolder)
     
-class FileSaveButton(FileSaveAsButton):
-    def __init__(self, icon, preparefile, returnaction, extlist=[], initialfolder=".", id=None):
-        FileSaveAsButton.__init__(self, icon, preparefile, returnaction, extlist, initialfolder, id)
-        self.title = "Save File"
+class FileSaveButton(html.BUTTON):
+    def __init__(self, preparefile, returnaction, extlist=[], initialfolder=".", id=None):
+        html.BUTTON.__init__(self, html.IMG(src="brywidgets/Save.png"), type="button", title="Save File", id=id, Class="imagebutton")
+        self.bind("click", self.onClick)
+        self.extlist = extlist
+        self.initialfolder = initialfolder
+        self.preparefile = preparefile
+        self.returnaction = returnaction
+        if id: self.id = id
 
     def onClick(self, event):
         global filesavedialog
@@ -256,8 +259,8 @@ class FileSaveButton(FileSaveAsButton):
             filesavedialog.open(self.initialfolder)
     
 class UserFileOpenButton(FileOpenButton):
-    def __init__(self, icon, getuserfolder, returnaction, extlist=[], id=None):
-        FileOpenButton.__init__(self, icon, returnaction, extlist, id=id)
+    def __init__(self, getuserfolder, returnaction, extlist=[], id=None):
+        FileOpenButton.__init__(self, returnaction, extlist, id=id)
         self.getuserfolder = getuserfolder
     
     def onClick(self, event):
@@ -271,8 +274,8 @@ class UserFileOpenButton(FileOpenButton):
             fileopendialog.open(userfolder)
 
 class UserFileSaveAsButton(FileSaveAsButton):
-    def __init__(self, icon, getuserfolder, preparefile, returnaction, extlist=[], id=None):
-        FileSaveAsButton.__init__(self, icon, preparefile, returnaction, extlist, id=id)
+    def __init__(self, getuserfolder, preparefile, returnaction, extlist=[], id=None):
+        FileSaveAsButton.__init__(self, preparefile, returnaction, extlist, id=id)
         self.getuserfolder = getuserfolder
     
     def onClick(self, event):
@@ -287,8 +290,8 @@ class UserFileSaveAsButton(FileSaveAsButton):
             filesavedialog.open(userfolder)
     
 class UserFileSaveButton(FileSaveButton):
-    def __init__(self, icon, getuserfolder, preparefile, returnaction, extlist=[], id=None):
-        FileSaveButton.__init__(self, icon, preparefile, returnaction, extlist, id=id)
+    def __init__(self, getuserfolder, preparefile, returnaction, extlist=[], id=None):
+        FileSaveButton.__init__(self, preparefile, returnaction, extlist, id=id)
         self.getuserfolder = getuserfolder
     
     def onClick(self, event):
@@ -306,9 +309,9 @@ class UserFileSaveButton(FileSaveButton):
                 filesavedialog.open(userfolder)
     
 class LoginButton(html.BUTTON):
-    def __init__(self, icon, checkuserexists, createusername, loguserin, id=None):
+    def __init__(self, checkuserexists, createusername, loguserin, id=None):
         global logindialog
-        html.BUTTON.__init__(self, html.IMG(src=icon), type="button", title="Log In...", Class="imagebutton")
+        html.BUTTON.__init__(self, html.IMG(src="brywidgets/login.png"), type="button", title="Log In...", Class="imagebutton")
         self.bind("click", self.onClick)
         if not logindialog: logindialog = LoginDialog("Please type your username below:")
         logindialog.checkuserexists = checkuserexists
@@ -321,7 +324,7 @@ class LoginButton(html.BUTTON):
 
 class ImageFromSVGButton(html.BUTTON):
     def __init__(self, svgimage, id=None):
-        html.BUTTON.__init__(self, html.IMG(src="Buttons/Copy.bmp"), type="button", title="Copy or Save...", Class="imagebutton")
+        html.BUTTON.__init__(self, html.IMG(src="brywidgets/Copy.png"), type="button", title="Copy or Save...", Class="imagebutton")
         self.bind("click", self.onClick)
         self.svgimage = svgimage
 
@@ -341,7 +344,7 @@ class OverlayPanel(html.DIV):
         html.DIV.__init__(self, "", Class="overlaypanel")
         if id: self.id=id
         self.overlay = Overlay(self)
-        closebutton = html.IMG(src="closebutton.png", Class = "closebutton")
+        closebutton = html.IMG(src="brywidgets/closebutton.png", Class = "closebutton")
         closebutton.bind("click", self.close)
         titlebar = html.DIV([title, closebutton], Class="titlebar")
         self <= titlebar
@@ -384,14 +387,15 @@ class ImageFromSVG(OverlayPanel):
         self.hide()
     
 class DialogBox(html.DIV):
-    def __init__(self, title, id=None):
+    def __init__(self, title, content=None, id=None):
         html.DIV.__init__(self, "", Class="dialogbox")
         if id: self.id=id
         self.overlay = Overlay(self)
-        closebutton = html.IMG(src="closebutton.png", Class = "closebutton")
+        closebutton = html.IMG(src="brywidgets/closebutton.png", Class = "closebutton")
         closebutton.bind("click", self.close)
         titlebar = html.DIV([title, closebutton], Class="titlebar")
         self <= titlebar
+        if content: self <= content
         document <= self.overlay
     
     def show(self):
@@ -405,7 +409,7 @@ class DialogBox(html.DIV):
 
 class LoginDialog(DialogBox):
     def __init__(self, loginmessage, id=None):
-        DialogBox.__init__(self, "Log In", id)
+        DialogBox.__init__(self, "Log In", id=id)
         self <= html.P(loginmessage)
         self.loginbox = html.INPUT(id="loginbox")
         self <= self.loginbox
@@ -439,7 +443,7 @@ class LoginDialog(DialogBox):
         
 class UsernameDialog(DialogBox):
     def __init__(self, message, id=None):
-        DialogBox.__init__(self, "Create User Name", id)
+        DialogBox.__init__(self, "Create User Name", id=id)
         self <= html.P(message)
         self.usernamebox = html.INPUT(id="usernamebox")
         self <= self.usernamebox
@@ -463,7 +467,7 @@ class UsernameDialog(DialogBox):
             
 class FileDialog(DialogBox):
     def __init__(self, title, extlist=[], id=None):
-        DialogBox.__init__(self, title, id)
+        DialogBox.__init__(self, title, id=id)
         self.returnaction = None
         self.path = None
         self.extlist = extlist
@@ -611,15 +615,15 @@ class ColourPickerDialog(DialogBox):
         self.returnaction = None
        
         self.basecolourbox = html.DIV("", id="basecolourbox")
-        self.basecolourbox <= html.IMG(src="whitemask.png", id="whitemask")
-        self.basecolourbox <= html.IMG(src="blackmask.png", id="blackmask")
-        self.colourpointer = html.IMG(src="circle.png", id="colourpointer")
+        self.basecolourbox <= html.IMG(src="brywidgets/whitemask.png", id="whitemask")
+        self.basecolourbox <= html.IMG(src="brywidgets/blackmask.png", id="blackmask")
+        self.colourpointer = html.IMG(src="brywidgets/circle.png", id="colourpointer")
         self.basecolourbox <= self.colourpointer
         self.basecolourbox.bind("click", self.selectcolour)
         self <= self.basecolourbox
         
-        hueswatch = html.DIV(html.IMG(src="hues.png", id="hues"), id="hueswatch")
-        self.huepointer = html.IMG(src="circle.png", id="huepointer")
+        hueswatch = html.DIV(html.IMG(src="brywidgets/hues.png", id="hues"), id="hueswatch")
+        self.huepointer = html.IMG(src="brywidgets/circle.png", id="huepointer")
         hueswatch <= self.huepointer
         hueswatch.bind("click", self.selecthue)
         self <= hueswatch

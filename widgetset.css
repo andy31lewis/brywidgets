@@ -68,19 +68,20 @@
 }
 
 .imagebutton {
-    border: 1px solid black;
     padding: 0px;
     margin: 0.5vmin;
     width: 5vmin;
     height: 5vmin;
+    background-color: LightGrey;
 }
 
 .togglebutton {
-    border: 0px;
+    border: 2px solid white;
     padding: 0px;
     margin: 0.5vmin;
     width: 5vmin;
     height: 5vmin;
+    background-color: LightGrey;
 }
 
 .imagebutton > img, .togglebutton > img {

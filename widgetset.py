@@ -14,15 +14,18 @@ from browser import document, window, ajax, alert, confirm
 import browser.html as html
 import os
 
+#Utility function
 def delete(element):
     element.parentNode.removeChild(element)
     del element
 
-def rgb(colour):
+#Colour utility functions
+
+def rgbtotuple(colour):
     return tuple([int(x) for x in colour[4:-1].split(",")])
 
 def rgbtohwb(colour):
-    if isinstance(colour, str): colour = rgb(colour)
+    if isinstance(colour, str): colour = rgbtotuple(colour)
     maxc = max(colour); maxi = colour.index(maxc)
     minc = min(colour); mini = colour.index(minc)
     whitealpha = minc/maxc
@@ -49,30 +52,42 @@ def hwbtorgb(hue, whitealpha, blackalpha):
     return hue, colour
 
 class Notebook(html.DIV):
+    '''A tabbed set of pages; switch between pages by clicking on a tab.
+    To use, create pages by subclassing (or instantiating) NotebookPage, then create the notebook.
+    For example:
+        page1 = NotebookPage("First page", "beige")
+        page2 = NotebookPage("Second page", "powderblue")
+        nb = Notebook([page1, page2])'''
+
     def __init__(self, pagelist):
         html.DIV.__init__(self, "", Class="notebook")
         self.tabrow = html.DIV("", Class="notebooktabrow")
         self <= self.tabrow
         self.pagelist = []
-        for (page, title) in pagelist: self.addpage(page, title)
+        for page in pagelist: self.addpage(page)
     
-    def addpage(self, page, title):
+    def addpage(self, page):
         self <= page
-        tab = NotebookTab(self, len(self.pagelist), title)
+        tab = NotebookTab(self, len(self.pagelist), page.title)
         tab.style.backgroundColor = page.style.backgroundColor
         self.tabrow <= tab
         page.style.display="block" if len(self.pagelist)==0 else "none"
         self.pagelist.append(page)
 
 class NotebookPage(html.DIV):
-    def __init__(self, pageid, bgcolour):
-        html.DIV.__init__(self, "", id=pageid, Class="notebookpage")
+    '''A page in a notebook.  Create with a title (which appears on its tab, and a background colour'''
+    def __init__(self, title, bgcolour, id=None):
+        html.DIV.__init__(self, "", Class="notebookpage")
         self.style.backgroundColor = bgcolour
+        self.title = title
+        if id: self.id = id
 
     def update(self):
         pass
 
 class NotebookTab(html.DIV):
+    '''Not intended to be created by end user.
+    A tab at the top of a NotebookPage.'''
     def __init__(self, notebook, index, title):
         html.DIV.__init__(self, html.P(title), Class="notebooktab")
         self.notebook = notebook
@@ -142,28 +157,30 @@ class GridPanel(html.DIV):
         if id: self.id = id
 
 class Button(html.BUTTON):
-    def __init__(self, text, handler, colour=None, id=None):
+    def __init__(self, text, handler, colour=None, tooltip=None, id=None):
         html.BUTTON.__init__(self, text, type="button", Class="button")
         self.bind("click", handler)
         if colour: self.style.backgroundColor = colour
+        if tooltip: self.title = tooltip
         if id: self.id = id
 
 class ImageButton(html.BUTTON):
-    def __init__(self, icon, handler, title=None, id=None):
+    def __init__(self, icon, handler, colour=None, tooltip=None, id=None):
         html.BUTTON.__init__(self, html.IMG(src=icon), type="button", Class="imagebutton")
         self.bind("click", handler)
-        if title: self.title = title
+        if colour: self.style.backgroundColor = colour
+        if tooltip: self.title = tooltip
         if id: self.id = id
 
 class ToggleButton(html.BUTTON):
-    def __init__(self, icon, handler, title=None, id=None):
+    def __init__(self, icon, handler, tooltip=None, id=None):
         self.icon = html.IMG(src=icon)
         html.BUTTON.__init__(self, self.icon, type="button", id=id, Class="togglebutton")
         self._selected = None
         self.selected = False
         self.handler = handler
         self.bind("click", self.onClick)
-        if title: self.title = title
+        if tooltip: self.title = tooltip
         if id: self.id = id
     
     @property
@@ -664,7 +681,7 @@ class ColourPickerDialog(DialogBox):
         self.colourdemo.style.backgroundColor = "rgb({},{},{})".format(*self.colour)
     
     def setupfromcolour(self, colour):
-        self.colour = rgb(colour)
+        self.colour = rgbtotuple(colour)
         self.colourdemo.style.backgroundColor = colour
         
         self.hue, huenumber, self.whitealpha, self.blackalpha = rgbtohwb(colour)

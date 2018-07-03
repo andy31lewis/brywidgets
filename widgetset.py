@@ -101,6 +101,8 @@ class NotebookTab(html.DIV):
         self.notebook.pagelist[self.index].update()
 
 class DropDown(html.SELECT):
+    '''Dropdown list of options.  Call with a list of options
+     and a function to be used when the user chooses a different option'''
     def __init__(self, choices, onchange, initialchoice=None, id=None):
         html.SELECT.__init__(self, "", Class="dropdown")
         self <= (html.OPTION(text, value=i) for (i, text) in enumerate(choices))
@@ -108,7 +110,20 @@ class DropDown(html.SELECT):
         if initialchoice: self.selectedIndex = initialchoice
         if id: self.id = id
 
+class ListBox(html.SELECT):
+    '''List of options (all shown unless the number to show is given in which case a scroll bar is used).
+    Call with a list of options and a function to be used when the user chooses a different option'''
+    def __init__(self, choices, onchange, size=None, initialchoice=None, id=None):
+        html.SELECT.__init__(self, "", Class="listbox")
+        self <= (html.OPTION(text, value=i) for (i, text) in enumerate(choices))
+        self.bind("change", onchange)
+        self.size = size if size else len(choices)
+        if initialchoice: self.select('OPTION')[initialchoice].selected="selected"
+        if id: self.id = id
+
 class InputBox(html.INPUT):
+    '''Standard input box.  Call with a function to use if the Enter key is pressed.
+    This function takes the keypress event as argument.'''
     def __init__(self, EnterKeyAction, id=None):
         html.INPUT.__init__(self, id=id)
         self.EnterKeyAction = EnterKeyAction
@@ -119,16 +134,8 @@ class InputBox(html.INPUT):
         if event.keyCode != 13: return
         self.EnterKeyAction()
 
-class ListBox(html.SELECT):
-    def __init__(self, choices, onchange, size=None, initialchoice=None, id=None):
-        html.SELECT.__init__(self, "", Class="listbox")
-        self <= (html.OPTION(text, value=i) for (i, text) in enumerate(choices))
-        self.bind("change", onchange)
-        self.size = size if size else len(choices)
-        if initialchoice: self.select('OPTION')[initialchoice].selected="selected"
-        if id: self.id = id
-
 class Panel(html.DIV):
+    '''Just a container, with an optional title and default border'''
     def __init__(self, items=None, id=None, border=None, title=None):
         html.DIV.__init__(self, "", Class="panel")
         if id: self.id = id
@@ -137,18 +144,21 @@ class Panel(html.DIV):
         if border: self.style.border = border
 
 class RowPanel(html.DIV):
+    '''Container which lays its contents out in a row'''
     def __init__(self, items=None, id=None):
         html.DIV.__init__(self, "", Class="rowpanel")
         if items: self <= items
         if id: self.id = id
 
 class ColumnPanel(html.DIV):
+    '''Container which lays its contents out in a column'''
     def __init__(self, items=None, id=None):
         html.DIV.__init__(self, "", Class="columnpanel")
         if items: self <= items
         if id: self.id = id
 
 class GridPanel(html.DIV):
+    '''Container which lays its contents out in a specified grid'''
     def __init__(self, columns, rows, items=None, id=None):
         html.DIV.__init__(self, "", Class="gridpanel")
         self.style.gridTemplateColumns = " ".join(["auto"]*columns)
@@ -157,6 +167,8 @@ class GridPanel(html.DIV):
         if id: self.id = id
 
 class Button(html.BUTTON):
+    '''Button with text.  Call with its text, and function to be called on click.
+    This function takes the click event as argument.'''
     def __init__(self, text, handler, colour=None, tooltip=None, id=None):
         html.BUTTON.__init__(self, text, type="button", Class="button")
         self.bind("click", handler)
@@ -165,6 +177,8 @@ class Button(html.BUTTON):
         if id: self.id = id
 
 class ImageButton(html.BUTTON):
+    '''Button with an image.  Call with the path to its image, and function to be called on click.
+    This function takes the click event as argument.'''
     def __init__(self, icon, handler, colour=None, tooltip=None, id=None):
         html.BUTTON.__init__(self, html.IMG(src=icon), type="button", Class="imagebutton")
         self.bind("click", handler)
@@ -173,6 +187,8 @@ class ImageButton(html.BUTTON):
         if id: self.id = id
 
 class ToggleButton(html.BUTTON):
+    '''Button with an image.  Call with the path to its image, and function to be called on click.
+    This function takes the click event as argument.'''
     def __init__(self, icon, handler, tooltip=None, id=None):
         self.icon = html.IMG(src=icon)
         html.BUTTON.__init__(self, self.icon, type="button", id=id, Class="togglebutton")
@@ -202,6 +218,9 @@ class ToggleButton(html.BUTTON):
         self.handler(event)
 
 class ColourPickerButton(html.BUTTON):
+    '''Button which opens a colour picker, and then takes on the colour which is selected.
+    Call with an initial colour, and a function to be called after a colour is selected.
+    This function takes two arguments: the colour, and the id of the button (which could be None).''' 
     def __init__(self, initialcolour, returnaction, id=None):
         html.BUTTON.__init__(self, "", type="button", title="Open Colour Picker...", Class="button")
         self.style.backgroundColor = initialcolour
@@ -222,6 +241,9 @@ class ColourPickerButton(html.BUTTON):
         
         
 class ColourPickerImageButton(html.BUTTON):
+    '''Button which opens a colour picker, and then takes on the colour which is selected.
+    Call with the path to its image, and a function to be called after a colour is selected.
+    This function takes one argument: the colour selected.''' 
     def __init__(self, icon, returnaction, id=None):
         html.BUTTON.__init__(self, html.IMG(src=icon), type="button", title="Open Colour Picker...", Class="imagebutton")
         self.bind("click", self.onClick)
@@ -235,6 +257,10 @@ class ColourPickerImageButton(html.BUTTON):
         colourpickerdialog.show()
     
 class FileOpenButton(html.BUTTON):
+    '''Button which opens a dialog for opening a file.  Call it with a function to be called after the file is opened.
+    This function takes two arguments: the contents and the name of the file which was opened.
+    Also optionally supply a list of file extensions which should be displayed in the dialog,
+    and the path to the folder initially displayed.''' 
     def __init__(self, returnaction, extlist=[], initialfolder=".", id=None):
         html.BUTTON.__init__(self, html.IMG(src="brywidgets/Open.png"), type="button", title="Open File...", id=id, Class="imagebutton")
         self.bind("click", self.onClick)
@@ -250,6 +276,12 @@ class FileOpenButton(html.BUTTON):
         fileopendialog.open(self.initialfolder)
     
 class FileSaveAsButton(html.BUTTON):
+    '''Button which opens a dialog for saving a file.  Call it with two functions:
+    The first should take no arguments, and return a string with the contents of the file to be saved.
+    The second is to be called after the file is saved. 
+    This function takes one argument: the name given to the file when it was saved.
+    Also optionally supply a list of file extensions which should be displayed in the dialog,
+    and the path to the folder initially displayed.''' 
     def __init__(self, preparefile, returnaction, extlist=[], initialfolder=".", id=None):
         html.BUTTON.__init__(self, html.IMG(src="brywidgets/SaveAs.png"), type="button", title="Save File As...", id=id, Class="imagebutton")
         self.bind("click", self.onClick)
@@ -267,6 +299,13 @@ class FileSaveAsButton(html.BUTTON):
         filesavedialog.open(self.initialfolder)
     
 class FileSaveButton(html.BUTTON):
+    '''If the currently open file already has a name, this button re-saves the file with that name.
+    Otherwise it opens a dialog for opening a file.  Call it with two functions:
+    The first should take no arguments, and return a string with the contents of the file to be saved.
+    The second is to be called after the file is saved. 
+    This function takes one argument: the name given to the file when it was saved.
+    Also optionally supply a list of file extensions which should be displayed in the dialog,
+    and the path to the folder initially displayed.''' 
     def __init__(self, preparefile, returnaction, extlist=[], initialfolder=".", id=None):
         html.BUTTON.__init__(self, html.IMG(src="brywidgets/Save.png"), type="button", title="Save File", id=id, Class="imagebutton")
         self.bind("click", self.onClick)
@@ -287,6 +326,10 @@ class FileSaveButton(html.BUTTON):
             filesavedialog.open(self.initialfolder)
     
 class UserFileOpenButton(FileOpenButton):
+    '''Same as FileOpenButton, but requires a user to have their own folder to save files in - ie to be logged in.
+    Call with two functions:
+    The first takes no arguments, and returns the path to the user's folder.
+    For the rest of the arguments, see FileOpenButton.'''
     def __init__(self, getuserfolder, returnaction, extlist=[], id=None):
         FileOpenButton.__init__(self, returnaction, extlist, id=id)
         self.getuserfolder = getuserfolder
@@ -302,6 +345,10 @@ class UserFileOpenButton(FileOpenButton):
             fileopendialog.open(userfolder)
 
 class UserFileSaveAsButton(FileSaveAsButton):
+    '''Same as FilesavAsButton, but requires a user to have their own folder to save files in - ie to be logged in.
+    Call with two functions:
+    The first takes no arguments, and returns the path to the user's folder.
+    For the rest of the arguments, see FileSaveAsButton.'''
     def __init__(self, getuserfolder, preparefile, returnaction, extlist=[], id=None):
         FileSaveAsButton.__init__(self, preparefile, returnaction, extlist, id=id)
         self.getuserfolder = getuserfolder
@@ -318,6 +365,10 @@ class UserFileSaveAsButton(FileSaveAsButton):
             filesavedialog.open(userfolder)
     
 class UserFileSaveButton(FileSaveButton):
+    '''Same as FileSaveButton, but requires a user to have their own folder to save files in - ie to be logged in.
+    Call with two functions:
+    The first takes no arguments, and returns the path to the user's folder.
+    For the rest of the arguments, see FileSaveButton.'''
     def __init__(self, getuserfolder, preparefile, returnaction, extlist=[], id=None):
         FileSaveButton.__init__(self, preparefile, returnaction, extlist, id=id)
         self.getuserfolder = getuserfolder
@@ -337,6 +388,7 @@ class UserFileSaveButton(FileSaveButton):
                 filesavedialog.open(userfolder)
     
 class LoginButton(html.BUTTON):
+    '''Button which opens a dialog asking the user to supply their username.'''
     def __init__(self, checkuserexists, createusername, loguserin, id=None):
         global logindialog
         html.BUTTON.__init__(self, html.IMG(src="brywidgets/login.png"), type="button", title="Log In...", Class="imagebutton")

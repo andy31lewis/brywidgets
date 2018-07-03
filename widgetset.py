@@ -93,6 +93,17 @@ class DropDown(html.SELECT):
         if initialchoice: self.selectedIndex = initialchoice
         if id: self.id = id
 
+class InputBox(html.INPUT):
+    def __init__(self, EnterKeyAction, id=None):
+        html.INPUT.__init__(self, id=id)
+        self.EnterKeyAction = EnterKeyAction
+        print (self.EnterKeyAction)
+        self.bind("keypress", self.onKeypress)
+
+    def onKeypress(self, event):
+        if event.keyCode != 13: return
+        self.EnterKeyAction()
+
 class ListBox(html.SELECT):
     def __init__(self, choices, onchange, size=None, initialchoice=None, id=None):
         html.SELECT.__init__(self, "", Class="listbox")
@@ -411,7 +422,7 @@ class LoginDialog(DialogBox):
     def __init__(self, loginmessage, id=None):
         DialogBox.__init__(self, "Log In", id=id)
         self <= html.P(loginmessage)
-        self.loginbox = html.INPUT(id="loginbox")
+        self.loginbox = InputBox(self.checkusername, id="loginbox")
         self <= self.loginbox
         self <= Button("Log In", self.checkusername)
         self <= html.HR()
@@ -422,7 +433,7 @@ class LoginDialog(DialogBox):
         self.show()
         self.loginbox.focus()
 
-    def checkusername(self, event):
+    def checkusername(self, event=None):
         username = self.loginbox.value
         self.checkuserexists(username, self.existencecheck)
 
@@ -445,7 +456,7 @@ class UsernameDialog(DialogBox):
     def __init__(self, message, id=None):
         DialogBox.__init__(self, "Create User Name", id=id)
         self <= html.P(message)
-        self.usernamebox = html.INPUT(id="usernamebox")
+        self.usernamebox = InputBox(self.checkusername, id="usernamebox")
         self <= self.usernamebox
         self <= Button("Create Username", self.checkusername)
 
@@ -453,8 +464,9 @@ class UsernameDialog(DialogBox):
         self.checkuserexists = checkuserexists
         self.createusername = createusername
         self.show()
+        self.usernamebox.focus()
 
-    def checkusername(self, event):
+    def checkusername(self, event=None):
         username = self.usernamebox.value
         self.checkuserexists(username, self.existencecheck)
 
@@ -668,7 +680,6 @@ class ColourPickerDialog(DialogBox):
         self.hide()
         self.returnaction("rgb({}, {}, {})".format(*self.colour))
 
-#print ("Current directory:", os.getcwd())
 document.select("head")[0] <= html.LINK(rel="stylesheet", href="brywidgets/widgetset.css", type="text/css")
 colourpickerdialog = None
 fileopendialog = None
@@ -676,4 +687,3 @@ filesavedialog = None
 logindialog = None
 usernamedialog = None
 imagefromsvg = None
-#document.select("body")[0].style.visibility = "visible"

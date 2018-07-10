@@ -105,7 +105,7 @@ class DropDown(html.SELECT):
      and a function to be used when the user chooses a different option'''
     def __init__(self, choices, onchange, initialchoice=None, id=None):
         html.SELECT.__init__(self, "", Class="dropdown")
-        self <= (html.OPTION(text, value=i) for (i, text) in enumerate(choices))
+        self <= (html.OPTION(text) for text in choices)
         self.bind("change", onchange)
         if initialchoice: self.selectedIndex = initialchoice
         if id: self.id = id
@@ -115,10 +115,10 @@ class ListBox(html.SELECT):
     Call with a list of options and a function to be used when the user chooses a different option'''
     def __init__(self, choices, onchange, size=None, initialchoice=None, id=None):
         html.SELECT.__init__(self, "", Class="listbox")
-        self <= (html.OPTION(text, value=i) for (i, text) in enumerate(choices))
+        self <= (html.OPTION(text) for text in choices)
         self.bind("change", onchange)
         self.size = size if size else len(choices)
-        if initialchoice: self.select('OPTION')[initialchoice].selected="selected"
+        self.selectedIndex = initialchoice if initialchoice else -1
         if id: self.id = id
 
 class InputBox(html.INPUT):
@@ -127,21 +127,20 @@ class InputBox(html.INPUT):
     def __init__(self, EnterKeyAction, id=None):
         html.INPUT.__init__(self, id=id)
         self.EnterKeyAction = EnterKeyAction
-        print (self.EnterKeyAction)
         self.bind("keypress", self.onKeypress)
 
     def onKeypress(self, event):
         if event.keyCode != 13: return
-        self.EnterKeyAction()
+        self.EnterKeyAction(event)
 
 class Panel(html.DIV):
     '''Just a container, with an optional title and default border'''
-    def __init__(self, items=None, id=None, border=None, title=None):
+    def __init__(self, items=None, title=None, style=None, id=None):
         html.DIV.__init__(self, "", Class="panel")
         if id: self.id = id
         if title: self <= html.P(title)
         if items: self <= items
-        if border: self.style.border = border
+        if style: self.style = style
 
 class RowPanel(html.DIV):
     '''Container which lays its contents out in a row'''
@@ -219,20 +218,19 @@ class ToggleButton(html.BUTTON):
 
 class ColourPickerButton(html.BUTTON):
     '''Button which opens a colour picker, and then takes on the colour which is selected.
-    Call with an initial colour, and a function to be called after a colour is selected.
-    This function takes two arguments: the colour, and the id of the button (which could be None).''' 
-    def __init__(self, initialcolour, returnaction, id=None):
-        html.BUTTON.__init__(self, "", type="button", title="Open Colour Picker...", Class="button")
-        self.style.backgroundColor = initialcolour
+    Call with a "returnaction" function to be called after a colour is selected, and an optional initial colour (in rgb() format).
+    The "returnaction" function takes two arguments: the colour selected, and the id of the button (which could be None).''' 
+    def __init__(self, returnaction, label="", initialcolour=None, id=None):
+        html.BUTTON.__init__(self, label, type="button", title="Open Colour Picker...", Class="button")
+        self.style.backgroundColor = initialcolour if initialcolour else "rgb(211, 211, 211)"
         if id: self.id = id
         self.bind("click", self.onClick)
         self.returnaction = returnaction
     
     def onClick(self, event):
         global colourpickerdialog
-        if not colourpickerdialog: colourpickerdialog = ColourPickerDialog()
+        if not colourpickerdialog: colourpickerdialog = ColourPickerDialog(self.onChange)
         colourpickerdialog.setupfromcolour(self.style.backgroundColor)
-        colourpickerdialog.returnaction = self.onChange
         colourpickerdialog.show()
 
     def onChange(self, colour):
@@ -252,74 +250,64 @@ class ColourPickerImageButton(html.BUTTON):
     
     def onClick(self, event):
         global colourpickerdialog
-        if not colourpickerdialog: colourpickerdialog = ColourPickerDialog()
-        colourpickerdialog.returnaction = self.returnaction
+        if not colourpickerdialog: colourpickerdialog = ColourPickerDialog(self.returnaction)
         colourpickerdialog.show()
     
 class FileOpenButton(html.BUTTON):
     '''Button which opens a dialog for opening a file.  Call it with a function to be called after the file is opened.
     This function takes two arguments: the contents and the name of the file which was opened.
     Also optionally supply a list of file extensions which should be displayed in the dialog,
-    and the path to the folder initially displayed.''' 
+    and the path to the folder to be displayed initially.''' 
     def __init__(self, returnaction, extlist=[], initialfolder=".", id=None):
+        global fileopendialog
         html.BUTTON.__init__(self, html.IMG(src="brywidgets/Open.png"), type="button", title="Open File...", id=id, Class="imagebutton")
         self.bind("click", self.onClick)
-        self.extlist = extlist
+        if not fileopendialog: fileopendialog = FileOpenDialog(returnaction, extlist)
         self.initialfolder = initialfolder
-        self.returnaction = returnaction
         if id: self.id = id
     
     def onClick(self, event):
-        global fileopendialog
-        if not fileopendialog: fileopendialog = FileOpenDialog(self.extlist)
-        fileopendialog.returnaction = self.returnaction
         fileopendialog.open(self.initialfolder)
     
 class FileSaveAsButton(html.BUTTON):
     '''Button which opens a dialog for saving a file.  Call it with two functions:
     The first should take no arguments, and return a string with the contents of the file to be saved.
-    The second is to be called after the file is saved. 
+    The second is optional; if present, it will be called after the file is saved. 
     This function takes one argument: the name given to the file when it was saved.
     Also optionally supply a list of file extensions which should be displayed in the dialog,
-    and the path to the folder initially displayed.''' 
-    def __init__(self, preparefile, returnaction, extlist=[], initialfolder=".", id=None):
+    a default extension for the filename, and the path to the folder initially displayed.''' 
+    def __init__(self, preparefile, returnaction=None, extlist=[], defaultextension=None, initialfolder=".", id=None):
+        global filesavedialog
         html.BUTTON.__init__(self, html.IMG(src="brywidgets/SaveAs.png"), type="button", title="Save File As...", id=id, Class="imagebutton")
         self.bind("click", self.onClick)
-        self.extlist = extlist
+        if not filesavedialog: filesavedialog = FileSaveDialog(returnaction, extlist, defaultextension)
         self.initialfolder = initialfolder
         self.preparefile = preparefile
-        self.returnaction = returnaction
         if id: self.id = id
     
     def onClick(self, event):
-        global filesavedialog
-        if not filesavedialog: filesavedialog = FileSaveDialog(self.extlist)
         filesavedialog.filetosave = self.preparefile()
-        filesavedialog.returnaction = self.returnaction
         filesavedialog.open(self.initialfolder)
     
 class FileSaveButton(html.BUTTON):
     '''If the currently open file already has a name, this button re-saves the file with that name.
     Otherwise it opens a dialog for opening a file.  Call it with two functions:
     The first should take no arguments, and return a string with the contents of the file to be saved.
-    The second is to be called after the file is saved. 
+    The second is optional; if present, it will be called after the file is saved. 
     This function takes one argument: the name given to the file when it was saved.
     Also optionally supply a list of file extensions which should be displayed in the dialog,
     and the path to the folder initially displayed.''' 
-    def __init__(self, preparefile, returnaction, extlist=[], initialfolder=".", id=None):
+    def __init__(self, preparefile, returnaction=None, extlist=[], defaultextension=None, initialfolder=".", id=None):
+        global filesavedialog
         html.BUTTON.__init__(self, html.IMG(src="brywidgets/Save.png"), type="button", title="Save File", id=id, Class="imagebutton")
         self.bind("click", self.onClick)
-        self.extlist = extlist
+        if not filesavedialog: filesavedialog = FileSaveDialog(returnaction, extlist, defaultextension)
         self.initialfolder = initialfolder
         self.preparefile = preparefile
-        self.returnaction = returnaction
         if id: self.id = id
 
     def onClick(self, event):
-        global filesavedialog
-        if not filesavedialog: filesavedialog = FileSaveDialog(self.extlist)
         filesavedialog.filetosave = self.preparefile()
-        filesavedialog.returnaction = self.returnaction
         if filesavedialog.filename:
             filesavedialog.autosave()
         else:
@@ -327,76 +315,54 @@ class FileSaveButton(html.BUTTON):
     
 class UserFileOpenButton(FileOpenButton):
     '''Same as FileOpenButton, but requires a user to have their own folder to save files in - ie to be logged in.
-    Call with two functions:
-    The first takes no arguments, and returns the path to the user's folder.
-    For the rest of the arguments, see FileOpenButton.'''
-    def __init__(self, getuserfolder, returnaction, extlist=[], id=None):
+    For the arguments, see FileOpenButton.'''
+    def __init__(self, returnaction, extlist=[], id=None):
         FileOpenButton.__init__(self, returnaction, extlist, id=id)
-        self.getuserfolder = getuserfolder
     
     def onClick(self, event):
-        userfolder = self.getuserfolder()
-        if userfolder is None:
+        if currentuser is None:
             alert("In order to save or open files, you need to log in.\nPlease click the login button.")
         else:
-            global fileopendialog
-            if not fileopendialog: fileopendialog = FileOpenDialog(self.extlist)
-            fileopendialog.returnaction = self.returnaction
-            fileopendialog.open(userfolder)
+            fileopendialog.open("./users/"+currentuser)
 
 class UserFileSaveAsButton(FileSaveAsButton):
-    '''Same as FilesavAsButton, but requires a user to have their own folder to save files in - ie to be logged in.
-    Call with two functions:
-    The first takes no arguments, and returns the path to the user's folder.
-    For the rest of the arguments, see FileSaveAsButton.'''
-    def __init__(self, getuserfolder, preparefile, returnaction, extlist=[], id=None):
-        FileSaveAsButton.__init__(self, preparefile, returnaction, extlist, id=id)
-        self.getuserfolder = getuserfolder
+    '''Same as FilesaveAsButton, but requires a user to have their own folder to save files in - ie to be logged in.
+    For the arguments, see FileSaveAsButton.'''
+    def __init__(self, preparefile, returnaction=None, extlist=[], defaultextension=None, id=None):
+        FileSaveAsButton.__init__(self, preparefile, returnaction, extlist, defaultextension, id=id)
     
     def onClick(self, event):
-        userfolder = self.getuserfolder()
-        if userfolder is None:
+        if currentuser is None:
             alert("In order to save or open files, you need to log in.\nPlease click the login button.")
         else:
-            global filesavedialog
-            if not filesavedialog: filesavedialog = FileSaveDialog(self.extlist)
             filesavedialog.filetosave = self.preparefile()
-            filesavedialog.returnaction = self.returnaction
-            filesavedialog.open(userfolder)
+            filesavedialog.open("./users/"+currentuse)
     
 class UserFileSaveButton(FileSaveButton):
     '''Same as FileSaveButton, but requires a user to have their own folder to save files in - ie to be logged in.
-    Call with two functions:
-    The first takes no arguments, and returns the path to the user's folder.
-    For the rest of the arguments, see FileSaveButton.'''
-    def __init__(self, getuserfolder, preparefile, returnaction, extlist=[], id=None):
-        FileSaveButton.__init__(self, preparefile, returnaction, extlist, id=id)
-        self.getuserfolder = getuserfolder
+    For the arguments, see FileSaveButton.'''
+    def __init__(self, preparefile, returnaction=None, extlist=[], defaultextension=None, id=None):
+        FileSaveButton.__init__(self, preparefile, returnaction, extlist, defaultextension, id=id)
     
     def onClick(self, event):
-        userfolder = self.getuserfolder()
-        if userfolder is None:
+        if currentuser is None:
             alert("In order to save or open files, you need to log in.\nPlease click the login button.")
         else:
-            global filesavedialog
-            if not filesavedialog: filesavedialog = FileSaveDialog(self.extlist)
             filesavedialog.filetosave = self.preparefile()
-            filesavedialog.returnaction = self.returnaction
             if filesavedialog.filename:
                 filesavedialog.autosave()
             else:
-                filesavedialog.open(userfolder)
+                filesavedialog.open("./users/"+currentuser)
     
 class LoginButton(html.BUTTON):
-    '''Button which opens a dialog asking the user to supply their username.'''
-    def __init__(self, checkuserexists, createusername, loguserin, id=None):
+    '''Button which opens a dialog asking the user to supply their username.
+    Optionally, supply a function to be called on returning from the dialog after a successful login.
+    This function takes one argument - the username.'''
+    def __init__(self, returnaction=None, id=None):
         global logindialog
         html.BUTTON.__init__(self, html.IMG(src="brywidgets/login.png"), type="button", title="Log In...", Class="imagebutton")
         self.bind("click", self.onClick)
-        if not logindialog: logindialog = LoginDialog("Please type your username below:")
-        logindialog.checkuserexists = checkuserexists
-        logindialog.createusername = createusername
-        logindialog.loguserin = loguserin
+        if not logindialog: logindialog = LoginDialog("Please type your username below:", returnaction)
         if id: self.id = id
     
     def onClick(self, event):
@@ -416,7 +382,6 @@ class ImageFromSVGButton(html.BUTTON):
 
 class Overlay(html.DIV):
     def __init__(self, contents):
-        #print (contents)
         html.DIV.__init__(self, contents, Class="overlay")
 
 class OverlayPanel(html.DIV):
@@ -467,8 +432,9 @@ class ImageFromSVG(OverlayPanel):
         self.hide()
     
 class DialogBox(html.DIV):
-    def __init__(self, title, content=None, id=None):
+    def __init__(self, title, returnaction=None, content=None, id=None):
         html.DIV.__init__(self, "", Class="dialogbox")
+        self.returnaction = returnaction
         if id: self.id=id
         self.overlay = Overlay(self)
         closebutton = html.IMG(src="brywidgets/closebutton.png", Class = "closebutton")
@@ -488,12 +454,13 @@ class DialogBox(html.DIV):
         self.hide()
 
 class LoginDialog(DialogBox):
-    def __init__(self, loginmessage, id=None):
+    def __init__(self, loginmessage, returnaction=None, id=None):
         DialogBox.__init__(self, "Log In", id=id)
+        self.returnaction = returnaction
         self <= html.P(loginmessage)
-        self.loginbox = InputBox(self.checkusername, id="loginbox")
+        self.loginbox = InputBox(self.checkuserexists, id="loginbox")
         self <= self.loginbox
-        self <= Button("Log In", self.checkusername)
+        self <= Button("Log In", self.checkuserexists)
         self <= html.HR()
         self <= html.P("Don't have a username?\nClick below to create one")
         self <= Button("Create username", self.openusernamedialog)
@@ -502,54 +469,75 @@ class LoginDialog(DialogBox):
         self.show()
         self.loginbox.focus()
 
-    def checkusername(self, event=None):
+    def checkuserexists(self, event):
+        def oncomplete(request):
+            global currentuser
+            response = request.text.strip()
+            if response == "True":
+                self.hide()
+                currentuser = username
+                if self.returnaction: self.returnaction(username)
+            else:
+                alert("Sorry - this username does not exist.")
         username = self.loginbox.value
-        self.checkuserexists(username, self.existencecheck)
+        request = ajax.ajax()
+        request.bind("complete", oncomplete)
+        request.open("POST", "brywidgets/checkfolderexists.cgi", True)
+        request.set_header('content-type','application/x-www-form-urlencoded')
+        request.send({"username":username})
 
-    def existencecheck(self, username, userexists):
-        if userexists:
-            self.hide()
-            self.loguserin(username)
-        else:
-            alert("Sorry - this username does not exist.")
-            
     def openusernamedialog(self, event):
         global usernamedialog
         message = """Your username should consist of letters and numbers only.<br />
         Choose something which you will remember but other people will not guess"""
-        if not usernamedialog: usernamedialog = UsernameDialog(message)
+        if not usernamedialog: usernamedialog = UsernameDialog(message, self.returnaction)
         self.hide()
-        usernamedialog.open(self.checkuserexists, self.createusername)
+        usernamedialog.open()
         
 class UsernameDialog(DialogBox):
-    def __init__(self, message, id=None):
+    def __init__(self, message, returnaction=None, id=None):
         DialogBox.__init__(self, "Create User Name", id=id)
+        self.returnaction = returnaction
         self <= html.P(message)
-        self.usernamebox = InputBox(self.checkusername, id="usernamebox")
+        self.usernamebox = InputBox(self.checkuserexists, id="usernamebox")
         self <= self.usernamebox
-        self <= Button("Create Username", self.checkusername)
+        self <= Button("Create Username", self.checkuserexists)
 
-    def open(self, checkuserexists, createusername):
-        self.checkuserexists = checkuserexists
-        self.createusername = createusername
+    def open(self):
         self.show()
         self.usernamebox.focus()
 
-    def checkusername(self, event=None):
+    def checkuserexists(self, event):
+        def oncomplete(request):
+            response = request.text.strip()
+            if response == "True":
+                alert("Sorry - this username is already in use.")
+            else:
+                self.hide()
+                self.createusername(username)
         username = self.usernamebox.value
-        self.checkuserexists(username, self.existencecheck)
-
-    def existencecheck(self, username, userexists):
-        if userexists:
-            alert("Sorry - this username is already in use.")
-        else:
-            self.hide()
-            self.createusername(username)
+        request = ajax.ajax()
+        request.bind("complete", oncomplete)
+        request.open("POST", "brywidgets/checkfolderexists.cgi", True)
+        request.set_header('content-type','application/x-www-form-urlencoded')
+        request.send({"username":username})
             
+    def createusername(self, username):
+        def oncomplete(request):
+            response = request.text.strip()
+            if response == "OK":
+                currentuser = username
+                if self.returnaction: self.returnaction(username)
+                alert("Username created.  You are now logged in.")
+        request = ajax.ajax()
+        request.bind("complete", oncomplete)
+        request.open("POST", "brywidgets/createfolder.cgi", True)
+        request.set_header('content-type','application/x-www-form-urlencoded')
+        request.send({"username":username})
+
 class FileDialog(DialogBox):
-    def __init__(self, title, extlist=[], id=None):
-        DialogBox.__init__(self, title, id=id)
-        self.returnaction = None
+    def __init__(self, title, returnaction=None, extlist=[], id=None):
+        DialogBox.__init__(self, title, returnaction, id=id)
         self.path = None
         self.extlist = extlist
         
@@ -559,8 +547,9 @@ class FileDialog(DialogBox):
         self <= self.filelistbox
 
     def open(self, initialfolder="."):
-        self.path = [initialfolder]
-        self.getfilelist(initialfolder)
+        if currentuser or self.path is None: self.path = [initialfolder]
+        print (self.path)
+        self.getfilelist("/".join(self.path))
         self.show()
 
     def onitemclick(self, event):
@@ -571,6 +560,7 @@ class FileDialog(DialogBox):
     
     def onfolderdoubleclick(self, event):
         self.path.append(event.target.text)
+        print (self.path)
         self.getfilelist("/".join(self.path))
         self.fileinput.value = ""
     
@@ -579,26 +569,29 @@ class FileDialog(DialogBox):
 
     def onupdoubleclick(self, event):
         self.path.pop()
+        print (self.path)
         self.getfilelist("/".join(self.path))
         self.fileinput.value = ""
     
     def getfilelist(self, folder):
         request = ajax.ajax()
         request.bind("complete", self.populatebox)
-        request.open("POST", "sendfilelist.cgi", True)
+        request.open("POST", "brywidgets/sendfilelist.cgi", True)
         request.set_header('content-type','application/x-www-form-urlencoded')
         request.send({"folder":folder})
     
     def populatebox(self, request):
-        #print ("Response", request.text, len(request.text))
         folderlist, filelist = request.text.strip().split(chr(30))
         self.folderlist = folderlist.split(chr(31))
-        self.filelist = [filename for filename in filelist.split(chr(31)) if filename.split(".")[-1] in self.extlist]
-        
+        self.filelist = filelist.split(chr(31))
+        if self.extlist: self.filelist = [filename for filename in self.filelist if filename.split(".")[-1] in self.extlist]
+        print(self.folderlist)
+        print(self.filelist)
         self.filelistbox.text = ""
         if len(self.path) > 1:
-            self.filelistbox <= html.LI("[Up a level]", id="parentfolder")
-            document["parentfolder"].bind("dblclick", self.onupdoubleclick)
+            upalevel = html.LI("[Up a level]", Class="parentfolder")
+            upalevel.bind("dblclick", self.onupdoubleclick)
+            self.filelistbox <= upalevel
         self.filelistbox <= (html.LI(x, Class="foldername") for x in self.folderlist)
         self.filelistbox <= (html.LI(x, Class="filename") for x in self.filelist)
         for item in self.filelistbox.select("li"): item.bind("click", self.onitemclick)
@@ -606,45 +599,41 @@ class FileDialog(DialogBox):
         for item in self.filelistbox.select("li.filename"): item.bind("dblclick", self.onfiledoubleclick)
     
 class FileOpenDialog(FileDialog):
-    def __init__(self, extlist=[]):
-        FileDialog.__init__(self, "Open File", extlist, id="fileopendialog")
+    def __init__(self, returnaction=None, extlist=[]):
+        FileDialog.__init__(self, "Open File", returnaction, extlist, id="fileopendialog")
         self <= html.DIV(Button("Open", self.onopenbutton), id="buttondiv")
 
     def onfiledoubleclick(self, event):
-        global filesavedialog
         filename = event.target.text
         self.path.append(filename)
         filepath = "/".join(self.path)
         f = open(filepath).read()
         self.path.pop()
-        if not filesavedialog: filesavedialog = FileSaveDialog(self.extlist)
         filesavedialog.filename = filename
         filesavedialog.path = self.path
         self.hide()
         self.returnaction(f, filename)
     
     def onopenbutton(self, event):
-        global filesavedialog
         filename = self.fileinput.value
         self.path.append(filename)
         filepath = "/".join(self.path)
         if filename in self.folderlist:
             self.getfilelist(filepath)
         else:
-            #print (filepath)
             f = open(filepath).read()
             self.path.pop()
-            if not filesavedialog: filesavedialog = FileSaveDialog(self.extlist)
             filesavedialog.filename = filename
             filesavedialog.path = self.path
             self.hide()
             self.returnaction(f, filename)
 
 class FileSaveDialog(FileDialog):
-    def __init__(self, extlist=[]):
-        FileDialog.__init__(self, "Save File", extlist, id="filesavedialog")
+    def __init__(self, returnaction=None, extlist=[], defaultextension=None):
+        FileDialog.__init__(self, "Save File", returnaction, extlist, id="filesavedialog")
         self.filename = None
         self.filetosave = None
+        self.defaultextension = defaultextension
         self <= html.DIV(Button("Save", self.onsavebutton), id="buttondiv")
 
     def onsavebutton(self, event):
@@ -652,13 +641,14 @@ class FileSaveDialog(FileDialog):
         if filename == "":
             alert("No name given for the file")
             return
-        if filename[-4:] != ".tmk": filename += ".tmk"
+        if self.defaultextension:
+            ext = "."+self.defaultextension
+            if filename[-4:] != ext: filename += ext
         self.path.append(filename)
         filepath = "/".join(self.path)
         if filename in self.folderlist:
             self.getfilelist(filepath)
         else:
-            #print (filepath)
             if filename in self.filelist:
                 response = confirm("File exists. Overwrite?")
                 if response is False:
@@ -673,7 +663,6 @@ class FileSaveDialog(FileDialog):
     def autosave(self):
         self.path.append(self.filename)
         filepath = "/".join(self.path)
-        #print (filepath)
         self.savefile(filepath, self.filetosave)
         self.path.pop()
         self.hide()
@@ -682,7 +671,7 @@ class FileSaveDialog(FileDialog):
     def savefile(self, filepath, filetosave):
         request = ajax.ajax()
         #request.bind("complete", self.closedialog)
-        request.open("POST", "savefile.cgi", True)
+        request.open("POST", "brywidgets/savefile.cgi", True)
         request.set_header('content-type','application/x-www-form-urlencoded')
         request.send({"filepath":filepath, "filetosave":filetosave})
 
@@ -691,10 +680,8 @@ class FileSaveDialog(FileDialog):
         self.hide()
 
 class ColourPickerDialog(DialogBox):
-    def __init__(self):
-        DialogBox.__init__(self, "Colour Picker", id="colourpickerdialog")
-        self.returnaction = None
-       
+    def __init__(self, returnaction=None):
+        DialogBox.__init__(self, "Colour Picker", returnaction, id="colourpickerdialog")       
         self.basecolourbox = html.DIV("", id="basecolourbox")
         self.basecolourbox <= html.IMG(src="brywidgets/whitemask.png", id="whitemask")
         self.basecolourbox <= html.IMG(src="brywidgets/blackmask.png", id="blackmask")
@@ -755,4 +742,5 @@ fileopendialog = None
 filesavedialog = None
 logindialog = None
 usernamedialog = None
+currentuser = None
 imagefromsvg = None

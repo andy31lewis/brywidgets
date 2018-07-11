@@ -318,7 +318,7 @@ class FileSaveAsButton(html.BUTTON):
     preparefile: function which returns a string with the contents of the file to be saved. This function takes no arguments.
     Optional parameters:
     returnaction: function to be called after the file is opened.
-    This function takes two arguments: the contents and the name of the file which was opened.
+    This function takes one argument: the name of the file which was saved.
     defaultextension: extension which will be appended to the filename given if not already present.
     initialfolder: the path to the folder initially displayed in the dialog.''' 
     def __init__(self, preparefile, returnaction=None, extlist=[], defaultextension=None, initialfolder=".", id=None):
@@ -341,7 +341,7 @@ class FileSaveButton(html.BUTTON):
     preparefile: function which returns a string with the contents of the file to be saved. This function takes no argguments.
     Optional parameters:
     returnaction: function to be called after the file is opened.
-    This function takes two arguments: the contents and the name of the file which was opened.
+    This function takes one argument: the name of the file which was saved.
     extlist: a list of file extensions which should be displayed in the dialog.  If omitted, all files will be displayed.
     defaultextension: extension which will be appended to the filename given if not already present.
     initialfolder: the path to the folder initially displayed in the dialog.''' 

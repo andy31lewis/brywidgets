@@ -610,7 +610,6 @@ class FileDialog(DialogBox):
 
     def open(self, initialfolder="."):
         if currentuser or self.path is None: self.path = [initialfolder]
-        print (self.path)
         self.getfilelist("/".join(self.path))
         self.show()
 
@@ -622,7 +621,6 @@ class FileDialog(DialogBox):
     
     def onfolderdoubleclick(self, event):
         self.path.append(event.target.text)
-        print (self.path)
         self.getfilelist("/".join(self.path))
         self.fileinput.value = ""
     
@@ -631,7 +629,6 @@ class FileDialog(DialogBox):
 
     def onupdoubleclick(self, event):
         self.path.pop()
-        print (self.path)
         self.getfilelist("/".join(self.path))
         self.fileinput.value = ""
     
@@ -647,8 +644,7 @@ class FileDialog(DialogBox):
         self.folderlist = folderlist.split(chr(31))
         self.filelist = filelist.split(chr(31))
         if self.extlist: self.filelist = [filename for filename in self.filelist if filename.split(".")[-1] in self.extlist]
-        print(self.folderlist)
-        print(self.filelist)
+
         self.filelistbox.text = ""
         if len(self.path) > 1:
             upalevel = html.LI("[Up a level]", Class="parentfolder")
@@ -740,7 +736,6 @@ class FileSaveDialog(FileDialog):
         request.send({"filepath":filepath, "filetosave":filetosave})
 
     def closedialog(self, request):
-        #print (request.text)
         self.hide()
 
 class ColourPickerDialog(DialogBox):

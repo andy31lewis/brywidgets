@@ -7,44 +7,44 @@ To use, download the zip, and move the brywidgets folder into your own project f
 
 So far, the following widgets are available:
 
-##Buttons that open a dialog box
+## Buttons that open a dialog box
 
-###ColourPickerButton, ColourPickerImageButton
+### ColourPickerButton, ColourPickerImageButton
 These open a simple colour picker dialog. (This might become redundant if all browsers start supporting ```<input type="color">```.)
 
-###FileOpenButton, FileSaveButton, FileSaveAsButton
+### FileOpenButton, FileSaveButton, FileSaveAsButton
 These enable saving files on the server.  At present the files have to be converted into a string format before saving (eg using ```pickle```).
 
-###UserFileOpenButton, UserFileSaveButton, UserFileSaveAsButton, LoginButton
+### UserFileOpenButton, UserFileSaveButton, UserFileSaveAsButton, LoginButton
 These work as above, but require the user to log in before saving or opening a file.  The username system is simple: each user has a folder inside a folder called ```users``` to save their own files in.  Checking whether a username exists is simly a matter of checking whether a folder of that name exists.  This will be fine for up to a few thousand users, but won't scale beyond that.
 
-###ImageFromSVGButton
+### ImageFromSVGButton
 Opens an overlay with containing a png image converted from an SVG image, so that it can be downloaded or saved by right-clicking.
 
-##Other Buttons
+## Other Buttons
 
-###Button, ImageButton, ToggleButton, ToggleImageButton
+### Button, ImageButton, ToggleButton, ToggleImageButton
 These are fairly self-explanatory; a ToggleButton remains depressed when clicked, until clicked again (or raised elsewhere in code).
 
-##Other Controls
+## Other Controls
 
-###DropDown, ListBox
+### DropDown, ListBox
 Choose an option from a list.
 
-###InputBox
+### InputBox
 A standard ```<input>```, with an OnEnterKey handler.
 
-##Containers for laying out content
+## Containers for laying out content
 
-###Notebook, NotebookPage
+### Notebook, NotebookPage
 A Notebook is a collection of tabbed pages; click on a tab to switch from one page to another.
 
-###Panel
+### Panel
 This is just a div with a default border and optional title.
 
-###RowPanel, ColumnPanel
+### RowPanel, ColumnPanel
 These organise the elements they contain in either a row or a column (using ```display: flex``` internally).
 
-###GridPanel
+### GridPanel
 These organise their contents ina grid of a specified size (using ```display: grid``` internally).
 

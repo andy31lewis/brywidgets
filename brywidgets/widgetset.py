@@ -203,7 +203,7 @@ class Button(html.BUTTON):
         if tooltip: self.title = tooltip
         if id: self.id = id
 
-class ImageButton(html.BUTTON):
+class ImageButton(Button):
     '''Button with an image.
     Required parameters:
     icon: the path to its image
@@ -212,30 +212,19 @@ class ImageButton(html.BUTTON):
     bgcolour: background colour (default is light grey)
     tooltip: text displayed when hovering over the button'''
     def __init__(self, icon, handler, bgcolour=None, tooltip=None, id=None):
-        html.BUTTON.__init__(self, html.IMG(src=icon), type="button", Class="imagebutton")
-        self.bind("click", handler)
-        if bgcolour: self.style.backgroundColor = bgcolour
-        if tooltip: self.title = tooltip
-        if id: self.id = id
+        Button.__init__(self, "", handler, bgcolour, tooltip, id)
+        self <= html.IMG(src=icon)
+        self.className = "imagebutton"
 
-class ToggleButton(html.BUTTON):
-    '''Button with an image.  The button remains depressed when clicked, until clicked again or raised by other means.
-    Required parameters:
-    icon: the path to its image
-    handler:  Function to be called on click. This function takes the click event as argument.
-    Optional parameters:
-    bgcolour: background colour
-    tooltip: text displayed when hovering over the button'''
-    def __init__(self, icon, handler, bgcolour=None, tooltip=None, id=None):
-        self.icon = html.IMG(src=icon)
-        html.BUTTON.__init__(self, self.icon, type="button", id=id, Class="togglebutton")
+class ToggleButton(Button):
+    '''Button which remains depressed when clicked, until clicked again or raised by other means.
+    For parameters see Button.'''
+    def __init__(self, text, handler, bgcolour=None, tooltip=None, id=None):
+        Button.__init__(self, text, self.onClick, bgcolour, tooltip, id)
+        self.className = "togglebutton"
         self._selected = None
         self.selected = False
         self.handler = handler
-        self.bind("click", self.onClick)
-        if bgcolour: self.style.backgroundColor = bgcolour
-        if tooltip: self.title = tooltip
-        if id: self.id = id
     
     @property
     def selected(self):
@@ -254,6 +243,14 @@ class ToggleButton(html.BUTTON):
     def onClick(self, event):
         self.selected = False if self.selected else True
         self.handler(event)
+
+class ToggleImageButton(ToggleButton):
+    '''Button with an image.  The button remains depressed when clicked, until clicked again or raised by other means.
+    For parameters see ImageButton.'''
+    def __init__(self, icon, handler, bgcolour=None, tooltip=None, id=None):
+        ToggleButton.__init__(self, "", handler, bgcolour, tooltip, id)
+        self <= html.IMG(src=icon)
+        self.className = "toggleimagebutton"
 
 class ColourPickerButton(html.BUTTON):
     '''Button which opens a colour picker, and then takes on the colour which is selected.

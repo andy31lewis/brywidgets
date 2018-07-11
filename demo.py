@@ -13,6 +13,9 @@ def countsongs(event):
     
 def changecolour(colour, id):
     panel1.style.backgroundColor=colour
+
+def toggleclick(event):
+    togglebutton.text = "Button down" if togglebutton.selected else "Button is Up!"
     
 def showfile(filecontent, filename):
     document["usertext"].value = filecontent
@@ -41,10 +44,11 @@ page1 <= (html.H1("Brywidgets Demo"),
                 The buttons on the right are laid out using GridPanels"""))
 
 panel1 = ws.Panel(title="The 100 greatest singles of all time - click to find the artist", id="panel1")
-panel1 <= ws.ColumnPanel([html.P("(This Panel shows a ListBox, a Dropdown, and a ColourPickerButton.)"),
+togglebutton = ws.ToggleButton("Button is Up!", toggleclick)
+panel1 <= ws.ColumnPanel([html.P("(This Panel shows a ListBox, a Dropdown, a ColourPickerButton and a ToggleButton.)"),
             html.DIV([ws.ListBox(artistdict.keys(), showartist, 10), html.P(id="artist"),
             ws.DropDown(sorted(set(artistdict.values())), countsongs), html.P(id="songcount"),
-            ws.ColourPickerButton(changecolour, "Choose Colour")])])
+            ws.ColourPickerButton(changecolour, "Choose Colour"), togglebutton])])
 
 panel2 = ws.Panel(title="Opening and saving files", id="panel2")
 panel2 <= ws.ColumnPanel([html.P("(This is a FileOpenButton, FileSaveButton and FileSaveAsButton)"),

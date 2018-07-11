@@ -75,7 +75,7 @@ body {
     display: none;
 }
 
-.button {
+.button, .togglebutton {
     padding: 0.5vmin;
     margin: 0.5vmin;
     min-width: 4vmin;
@@ -83,7 +83,7 @@ body {
     background-color: LightGrey;
 }
 
-.imagebutton {
+.imagebutton, .toggleimagebutton {
     padding: 0px;
     margin: 0.5vmin;
     width: 5vmin;
@@ -91,16 +91,11 @@ body {
     background-color: LightGrey;
 }
 
-.togglebutton {
+.togglebutton, .toggleimagebutton {
     border: 2px solid white;
-    padding: 0px;
-    margin: 0.5vmin;
-    width: 5vmin;
-    height: 5vmin;
-    background-color: LightGrey;
 }
 
-.imagebutton > img, .togglebutton > img {
+.imagebutton > img, .toggleimagebutton > img {
     margin: 0px;
     width: 100%;
     height: 100%;

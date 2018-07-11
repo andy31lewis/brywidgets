@@ -209,7 +209,7 @@ class ImageButton(html.BUTTON):
     icon: the path to its image
     handler:  Function to be called on click. This function takes the click event as argument.
     Optional parameters:
-    bgcolour: background colour
+    bgcolour: background colour (default is light grey)
     tooltip: text displayed when hovering over the button'''
     def __init__(self, icon, handler, bgcolour=None, tooltip=None, id=None):
         html.BUTTON.__init__(self, html.IMG(src=icon), type="button", Class="imagebutton")

@@ -1,0 +1,35 @@
+body {
+    font-family: arial, sans-serif;
+    font-size: 2.5vmin;
+}
+
+h1 {
+    text-align: center;
+    margin-top: 0px;
+}
+
+#page1, #page2, #page3, #page4 {
+    height: 90vh;
+    padding: 2.5vh;
+}
+
+#panel1, #panel2 {
+    width: 50%;
+}
+
+.paneltitle {
+    font-weight: bold;
+}
+
+textarea {
+    display: block;
+    width: 90%;
+    height: 100%;
+    margin: auto;
+}
+
+#usertext {
+    height: 25vmin;
+}
+
+

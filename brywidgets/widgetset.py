@@ -18,6 +18,8 @@
 from browser import document, window, ajax, alert, confirm
 import browser.html as html
 import os
+head = document.select("head")[0]
+head.insertAdjacentElement("afterbegin", html.LINK(rel="stylesheet", href="brywidgets/widgetset.css", type="text/css"))
 
 #Utility function
 def delete(element):
@@ -268,7 +270,8 @@ class ColourPickerButton(html.BUTTON):
     
     def onClick(self, event):
         global colourpickerdialog
-        if not colourpickerdialog: colourpickerdialog = ColourPickerDialog(self.onChange)
+        if not colourpickerdialog: colourpickerdialog = ColourPickerDialog()
+        colourpickerdialog.returnaction = self.onChange
         colourpickerdialog.setupfromcolour(self.style.backgroundColor)
         colourpickerdialog.show()
 
@@ -290,7 +293,8 @@ class ColourPickerImageButton(html.BUTTON):
     
     def onClick(self, event):
         global colourpickerdialog
-        if not colourpickerdialog: colourpickerdialog = ColourPickerDialog(self.returnaction)
+        if not colourpickerdialog: colourpickerdialog = ColourPickerDialog()
+        colourpickerdialog.returnaction = self.returnaction
         colourpickerdialog.show()
     
 class FileOpenButton(html.BUTTON):
@@ -435,7 +439,7 @@ class ImageFromSVGButton(html.BUTTON):
 class Overlay(html.DIV):
     '''Not intended to be created by end user'''
     def __init__(self, contents):
-        html.DIV.__init__(self, contents, Class="overlay")
+        html.DIV.__init__(self, contents, style={"visibility":"hidden"}, Class="overlay")
 
 class OverlayPanel(html.DIV):
     '''An overlay page which fills the browser window (unlike a dialog box).
@@ -796,7 +800,6 @@ class ColourPickerDialog(DialogBox):
         self.hide()
         self.returnaction("rgb({}, {}, {})".format(*self.colour))
 
-document.select("head")[0] <= html.LINK(rel="stylesheet", href="brywidgets/widgetset.css", type="text/css")
 colourpickerdialog = None
 fileopendialog = None
 filesavedialog = None

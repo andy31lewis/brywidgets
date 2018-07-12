@@ -8,7 +8,7 @@ h1 {
     margin-top: 0px;
 }
 
-#page1, #page2, #page3, #page4 {
+.notebookpage {
     height: 90vh;
     padding: 2.5vh;
 }

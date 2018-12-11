@@ -77,6 +77,7 @@ class Notebook(html.DIV):
         self <= page
         tab = NotebookTab(self, len(self.pagelist), page.title)
         tab.style.backgroundColor = page.style.backgroundColor
+        if page.id: tab.id = page.id+"_tab"
         self.tabrow <= tab
         page.style.display="block" if len(self.pagelist)==0 else "none"
         self.pagelist.append(page)

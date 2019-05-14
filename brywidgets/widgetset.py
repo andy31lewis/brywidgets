@@ -37,12 +37,12 @@ def rgbtohwb(colour):
     minc = min(colour); mini = colour.index(minc)
     whitealpha = minc/maxc
     blackalpha = 1 - maxc/255
-   
+
     hue = (R, G, B) = (0, 255, 255) if maxc==minc else tuple(int(255*(c-minc)/(maxc-minc)) for c in colour)
     if R == 255: huenumber = G if B==0 else (256*5)+255-B
     elif G == 255: huenumber = (256*2)+B if R==0 else (256)+255-R
     elif B == 255: huenumber = (256*4)+R if G==0 else (256*3)+255-G
-    
+
     return hue, huenumber, whitealpha, blackalpha
 
 def hwbtorgb(hue, whitealpha, blackalpha):
@@ -72,7 +72,7 @@ class Notebook(html.DIV):
         self <= self.tabrow
         self.pagelist = []
         for page in pagelist: self.addpage(page)
-    
+
     def addpage(self, page):
         self <= page
         tab = NotebookTab(self, len(self.pagelist), page.title)
@@ -103,7 +103,7 @@ class NotebookTab(html.DIV):
         self.notebook = notebook
         self.index = index
         self.bind("click", self.select)
-        
+
     def select(self, event):
         for p in self.notebook.pagelist:
             p.style.display="none"
@@ -151,6 +151,34 @@ class InputBox(html.INPUT):
     def onKeypress(self, event):
         if event.keyCode != 13: return
         self.enterkeyaction(event)
+
+class SpinControl(html.DIV):
+    def __init__(self, initialvalue, minvalue, maxvalue, action, id=None):
+        decrease = html.IMG(src="brywidgets/minus.png", id="minus")
+        decrease.bind("click", self.ondecrease)
+        increase = html.IMG(src="brywidgets/plus.png", id="plus")
+        increase.bind("click", self.onincrease)
+        self.currentvalue = initialvalue
+        self.minvalue = minvalue
+        self.maxvalue = maxvalue
+        self.valuespan = html.SPAN(str(self.currentvalue))
+        html.DIV.__init__(self,[decrease, self.valuespan, increase], Class="spincontrol")
+        self.action = action
+        if id: self.id = id
+
+    def setValue(self, n):
+        self.currentvalue = n
+        self.valuespan.text = str(self.currentvalue)
+
+    def ondecrease(self, event):
+        if self.currentvalue-1 >= self.minvalue: self.currentvalue -= 1
+        self.valuespan.text = str(self.currentvalue)
+        self.action(self.currentvalue)
+
+    def onincrease(self, event):
+        if self.currentvalue+1 <= self.maxvalue: self.currentvalue += 1
+        self.valuespan.text = str(self.currentvalue)
+        self.action(self.currentvalue)
 
 class Panel(html.DIV):
     '''Just a container with a default border. Optional parameters:
@@ -228,7 +256,7 @@ class ToggleButton(Button):
         self._selected = None
         self.selected = False
         self.handler = handler
-    
+
     @property
     def selected(self):
         return self._selected
@@ -268,7 +296,7 @@ class ColourPickerButton(html.BUTTON):
         if id: self.id = id
         self.bind("click", self.onClick)
         self.returnaction = returnaction
-    
+
     def onClick(self, event):
         global colourpickerdialog
         if not colourpickerdialog: colourpickerdialog = ColourPickerDialog()
@@ -279,25 +307,25 @@ class ColourPickerButton(html.BUTTON):
     def onChange(self, colour):
         self.style.backgroundColor = colour
         self.returnaction(colour, self.id)
-        
-        
+
+
 class ColourPickerImageButton(html.BUTTON):
     '''Button with an image, which opens a colour picker.
     Required parameters:
     icon: the path to its image
-    returnaction: function to be called after a colour is selected. This function takes one argument: the colour selected.''' 
+    returnaction: function to be called after a colour is selected. This function takes one argument: the colour selected.'''
     def __init__(self, icon, returnaction, id=None):
         html.BUTTON.__init__(self, html.IMG(src=icon), type="button", title="Open Colour Picker...", Class="imagebutton")
         self.bind("click", self.onClick)
         self.returnaction = returnaction
         if id: self.id = id
-    
+
     def onClick(self, event):
         global colourpickerdialog
         if not colourpickerdialog: colourpickerdialog = ColourPickerDialog()
         colourpickerdialog.returnaction = self.returnaction
         colourpickerdialog.show()
-    
+
 class FileOpenButton(html.BUTTON):
     '''Button which opens a dialog for opening a file.
     Required parameters:
@@ -305,7 +333,7 @@ class FileOpenButton(html.BUTTON):
     This function takes two arguments: the contents and the name of the file which was opened.
     Optional parameters:
     extlist: a list of file extensions which should be displayed in the dialog.  If omitted, all files will be displayed.
-    initialfolder: the path to the folder initially displayed in the dialog.''' 
+    initialfolder: the path to the folder initially displayed in the dialog.'''
     def __init__(self, returnaction, extlist=[], initialfolder=".", id=None):
         global fileopendialog
         html.BUTTON.__init__(self, html.IMG(src="brywidgets/Open.png"), type="button", title="Open File...", id=id, Class="imagebutton")
@@ -313,10 +341,10 @@ class FileOpenButton(html.BUTTON):
         if not fileopendialog: fileopendialog = FileOpenDialog(returnaction, extlist)
         self.initialfolder = initialfolder
         if id: self.id = id
-    
+
     def onClick(self, event):
         fileopendialog.open(self.initialfolder)
-    
+
 class FileSaveAsButton(html.BUTTON):
     '''Button which opens a dialog for saving a file.
     Required parameter:
@@ -325,7 +353,7 @@ class FileSaveAsButton(html.BUTTON):
     returnaction: function to be called after the file is opened.
     This function takes one argument: the name of the file which was saved.
     defaultextension: extension which will be appended to the filename given if not already present.
-    initialfolder: the path to the folder initially displayed in the dialog.''' 
+    initialfolder: the path to the folder initially displayed in the dialog.'''
     def __init__(self, preparefile, returnaction=None, extlist=[], defaultextension=None, initialfolder=".", id=None):
         global filesavedialog
         html.BUTTON.__init__(self, html.IMG(src="brywidgets/SaveAs.png"), type="button", title="Save File As...", id=id, Class="imagebutton")
@@ -334,11 +362,11 @@ class FileSaveAsButton(html.BUTTON):
         self.initialfolder = initialfolder
         self.preparefile = preparefile
         if id: self.id = id
-    
+
     def onClick(self, event):
         filesavedialog.filetosave = self.preparefile()
         filesavedialog.open(self.initialfolder)
-    
+
 class FileSaveButton(html.BUTTON):
     '''If the currently open file already has a name, this button re-saves the file with that name.
     Otherwise it opens a dialog for saving a file.
@@ -349,7 +377,7 @@ class FileSaveButton(html.BUTTON):
     This function takes one argument: the name of the file which was saved.
     extlist: a list of file extensions which should be displayed in the dialog.  If omitted, all files will be displayed.
     defaultextension: extension which will be appended to the filename given if not already present.
-    initialfolder: the path to the folder initially displayed in the dialog.''' 
+    initialfolder: the path to the folder initially displayed in the dialog.'''
     def __init__(self, preparefile, returnaction=None, extlist=[], defaultextension=None, initialfolder=".", id=None):
         global filesavedialog
         html.BUTTON.__init__(self, html.IMG(src="brywidgets/Save.png"), type="button", title="Save File", id=id, Class="imagebutton")
@@ -365,13 +393,13 @@ class FileSaveButton(html.BUTTON):
             filesavedialog.autosave()
         else:
             filesavedialog.open(self.initialfolder)
-    
+
 class UserFileOpenButton(FileOpenButton):
     '''Same as FileOpenButton, but requires a user to have their own folder to save files in - ie to be logged in.
     For the parameters, see FileOpenButton.'''
     def __init__(self, returnaction, extlist=[], id=None):
         FileOpenButton.__init__(self, returnaction, extlist, id=id)
-    
+
     def onClick(self, event):
         if currentuser is None:
             alert("In order to save or open files, you need to log in.\nPlease click the login button.")
@@ -383,20 +411,20 @@ class UserFileSaveAsButton(FileSaveAsButton):
     For the parameters, see FileSaveAsButton.'''
     def __init__(self, preparefile, returnaction=None, extlist=[], defaultextension=None, id=None):
         FileSaveAsButton.__init__(self, preparefile, returnaction, extlist, defaultextension, id=id)
-    
+
     def onClick(self, event):
         if currentuser is None:
             alert("In order to save or open files, you need to log in.\nPlease click the login button.")
         else:
             filesavedialog.filetosave = self.preparefile()
             filesavedialog.open("./users/"+currentuser)
-    
+
 class UserFileSaveButton(FileSaveButton):
     '''Same as FileSaveButton, but requires a user to have their own folder to save files in - ie to be logged in.
     For the parameters, see FileSaveButton.'''
     def __init__(self, preparefile, returnaction=None, extlist=[], defaultextension=None, id=None):
         FileSaveButton.__init__(self, preparefile, returnaction, extlist, defaultextension, id=id)
-    
+
     def onClick(self, event):
         if currentuser is None:
             alert("In order to save or open files, you need to log in.\nPlease click the login button.")
@@ -406,7 +434,7 @@ class UserFileSaveButton(FileSaveButton):
                 filesavedialog.autosave()
             else:
                 filesavedialog.open("./users/"+currentuser)
-    
+
 class LoginButton(html.BUTTON):
     '''Button which opens a dialog asking the user to supply their username.
     Optional parameter:
@@ -418,7 +446,7 @@ class LoginButton(html.BUTTON):
         self.bind("click", self.onClick)
         if not logindialog: logindialog = LoginDialog("Please type your username below:", returnaction)
         if id: self.id = id
-    
+
     def onClick(self, event):
         logindialog.open()
 
@@ -454,18 +482,18 @@ class OverlayPanel(html.DIV):
         titlebar = html.DIV([title, closebutton], Class="titlebar")
         self <= titlebar
         document <= self.overlay
-    
+
     def show(self):
         self.overlay.style.visibility = "visible"
 
     def hide(self):
         self.overlay.style.visibility = "hidden"
-    
+
     def close(self, event):
         self.hide()
 
 class ImageFromSVG(OverlayPanel):
-    '''Not intended to be created by end user.  To use, include an ImageFromSVGButton in the page.'''    
+    '''Not intended to be created by end user.  To use, include an ImageFromSVGButton in the page.'''
     def __init__(self):
         OverlayPanel.__init__(self, "Right click to copy or save image")
         self.canvas = html.CANVAS(id="canvascopy")
@@ -487,11 +515,11 @@ class ImageFromSVG(OverlayPanel):
         self.svgimage = html.IMG()
         self.svgimage.bind("load", self.drawimage)
         self.svgimage.src = 'data:image/svg+xml; charset=utf8, '+window.encodeURIComponent(svgString);
-    
+
     def close(self, event):
         delete(self.pngimage)
         self.hide()
-    
+
 class DialogBox(html.DIV):
     '''An overlay in the middle of the browser window.
     Required parameter: title (text for the title bar).'''
@@ -506,18 +534,18 @@ class DialogBox(html.DIV):
         self <= titlebar
         if content: self <= content
         document <= self.overlay
-    
+
     def show(self):
         self.overlay.style.visibility = "visible"
 
     def hide(self):
         self.overlay.style.visibility = "hidden"
-    
+
     def close(self, event):
         self.hide()
 
 class LoginDialog(DialogBox):
-    '''Not intended to be created by end user.  To use, include a LoginButton in the page.'''    
+    '''Not intended to be created by end user.  To use, include a LoginButton in the page.'''
     def __init__(self, loginmessage, returnaction=None, id=None):
         DialogBox.__init__(self, "Log In", id=id)
         self.returnaction = returnaction
@@ -528,7 +556,7 @@ class LoginDialog(DialogBox):
         self <= html.HR()
         self <= html.P("Don't have a username?\nClick below to create one")
         self <= Button("Create username", self.openusernamedialog)
-    
+
     def open(self):
         self.show()
         self.loginbox.focus()
@@ -557,9 +585,9 @@ class LoginDialog(DialogBox):
         if not usernamedialog: usernamedialog = UsernameDialog(message, self.returnaction)
         self.hide()
         usernamedialog.open()
-        
+
 class UsernameDialog(DialogBox):
-    '''Not intended to be created by end user.'''    
+    '''Not intended to be created by end user.'''
     def __init__(self, message, returnaction=None, id=None):
         DialogBox.__init__(self, "Create User Name", id=id)
         self.returnaction = returnaction
@@ -586,7 +614,7 @@ class UsernameDialog(DialogBox):
         request.open("POST", "brywidgets/checkfolderexists.cgi", True)
         request.set_header('content-type','application/x-www-form-urlencoded')
         request.send({"username":username})
-            
+
     def createusername(self, username):
         def oncomplete(request):
             global currentuser
@@ -602,12 +630,12 @@ class UsernameDialog(DialogBox):
         request.send({"username":username})
 
 class FileDialog(DialogBox):
-    '''Not intended to be created by end user.  Base class for all file dialogs.'''    
+    '''Not intended to be created by end user.  Base class for all file dialogs.'''
     def __init__(self, title, returnaction=None, extlist=[], id=None):
         DialogBox.__init__(self, title, returnaction, id=id)
         self.path = None
         self.extlist = extlist
-        
+
         self.fileinput = html.INPUT(id="fileinput")
         self <= self.fileinput
         self.filelistbox = html.UL(id="filelistbox")
@@ -623,12 +651,12 @@ class FileDialog(DialogBox):
         event.target.style.backgroundColor = "skyblue"
         if event.target.className != "parentfolder":
             self.fileinput.value = event.target.text
-    
+
     def onfolderdoubleclick(self, event):
         self.path.append(event.target.text)
         self.getfilelist("/".join(self.path))
         self.fileinput.value = ""
-    
+
     def onfiledoubleclick(self, event):
         pass
 
@@ -636,14 +664,14 @@ class FileDialog(DialogBox):
         self.path.pop()
         self.getfilelist("/".join(self.path))
         self.fileinput.value = ""
-    
+
     def getfilelist(self, folder):
         request = ajax.ajax()
         request.bind("complete", self.populatebox)
         request.open("POST", "brywidgets/sendfilelist.cgi", True)
         request.set_header('content-type','application/x-www-form-urlencoded')
         request.send({"folder":folder})
-    
+
     def populatebox(self, request):
         folderlist, filelist = request.text.strip().split(chr(30))
         self.folderlist = folderlist.split(chr(31))
@@ -660,9 +688,9 @@ class FileDialog(DialogBox):
         for item in self.filelistbox.select("li"): item.bind("click", self.onitemclick)
         for item in self.filelistbox.select("li.foldername"): item.bind("dblclick", self.onfolderdoubleclick)
         for item in self.filelistbox.select("li.filename"): item.bind("dblclick", self.onfiledoubleclick)
-    
+
 class FileOpenDialog(FileDialog):
-    '''Not intended to be created by end user.  To use, include a (User)FileOpenButton in the page.'''    
+    '''Not intended to be created by end user.  To use, include a (User)FileOpenButton in the page.'''
     def __init__(self, returnaction=None, extlist=[]):
         FileDialog.__init__(self, "Open File", returnaction, extlist, id="fileopendialog")
         self <= html.DIV(Button("Open", self.onopenbutton), id="buttondiv")
@@ -677,7 +705,7 @@ class FileOpenDialog(FileDialog):
         filesavedialog.path = self.path
         self.hide()
         self.returnaction(f, filename)
-    
+
     def onopenbutton(self, event):
         filename = self.fileinput.value
         self.path.append(filename)
@@ -693,7 +721,7 @@ class FileOpenDialog(FileDialog):
             self.returnaction(f, filename)
 
 class FileSaveDialog(FileDialog):
-    '''Not intended to be created by end user.  To use, include a (User)FileSaveAsButton in the page.'''    
+    '''Not intended to be created by end user.  To use, include a (User)FileSaveAsButton in the page.'''
     def __init__(self, returnaction=None, extlist=[], defaultextension=None):
         FileDialog.__init__(self, "Save File", returnaction, extlist, id="filesavedialog")
         self.filename = None
@@ -724,7 +752,7 @@ class FileSaveDialog(FileDialog):
             self.path.pop()
             self.hide()
             self.returnaction(filename)
-        
+
     def autosave(self):
         self.path.append(self.filename)
         filepath = "/".join(self.path)
@@ -732,7 +760,7 @@ class FileSaveDialog(FileDialog):
         self.path.pop()
         self.hide()
         self.returnaction(self.filename)
-        
+
     def savefile(self, filepath, filetosave):
         request = ajax.ajax()
         #request.bind("complete", self.closedialog)
@@ -744,9 +772,9 @@ class FileSaveDialog(FileDialog):
         self.hide()
 
 class ColourPickerDialog(DialogBox):
-    '''Not intended to be created by end user.  To use, include a ColourPicker(Image)Button in the page.'''    
+    '''Not intended to be created by end user.  To use, include a ColourPicker(Image)Button in the page.'''
     def __init__(self, returnaction=None):
-        DialogBox.__init__(self, "Colour Picker", returnaction, id="colourpickerdialog")       
+        DialogBox.__init__(self, "Colour Picker", returnaction, id="colourpickerdialog")
         self.basecolourbox = html.DIV("", id="basecolourbox")
         self.basecolourbox <= html.IMG(src="brywidgets/whitemask.png", id="whitemask")
         self.basecolourbox <= html.IMG(src="brywidgets/blackmask.png", id="blackmask")
@@ -754,49 +782,49 @@ class ColourPickerDialog(DialogBox):
         self.basecolourbox <= self.colourpointer
         self.basecolourbox.bind("click", self.selectcolour)
         self <= self.basecolourbox
-        
+
         hueswatch = html.DIV(html.IMG(src="brywidgets/hues.png", id="hues"), id="hueswatch")
         self.huepointer = html.IMG(src="brywidgets/circle.png", id="huepointer")
         hueswatch <= self.huepointer
         hueswatch.bind("click", self.selecthue)
         self <= hueswatch
-        
+
         self.colourdemo = html.DIV("", id="colourdemo")
         self <= self.colourdemo
         self <= Button("Select", self.onSelect, id="colourpickerselect")
-        
+
         self.setupfromcolour("rgb(0, 255, 255)")
-        
+
     def selecthue(self, event):
         hueswatch = event.currentTarget.getBoundingClientRect()
         x, y = int(event.clientX - hueswatch.left), int(event.clientY- hueswatch.top)
-        (self.huepointer.left, self.huepointer.top) = (x-5, y-5) 
+        (self.huepointer.left, self.huepointer.top) = (x-5, y-5)
         huenumber = x*6+y//8
-        
+
         self.hue, self.colour = hwbtorgb(huenumber, self.whitealpha, self.blackalpha)
         self.basecolourbox.style.backgroundColor = "rgb({},{},{})".format(*self.hue)
         self.colourdemo.style.backgroundColor = "rgb({},{},{})".format(*self.colour)
-    
+
     def selectcolour(self, event):
         x, y = event.clientX - event.currentTarget.getBoundingClientRect().left, event.clientY- event.currentTarget.getBoundingClientRect().top
-        (self.colourpointer.left, self.colourpointer.top) = (x-5, y-5) 
+        (self.colourpointer.left, self.colourpointer.top) = (x-5, y-5)
         (self.whitealpha, self.blackalpha) = (x/255, y/255)
         hue, self.colour = hwbtorgb(self.hue, self.whitealpha, self.blackalpha)
         self.colourdemo.style.backgroundColor = "rgb({},{},{})".format(*self.colour)
-    
+
     def setupfromcolour(self, colour):
         self.colour = rgbtotuple(colour)
         self.colourdemo.style.backgroundColor = colour
-        
+
         self.hue, huenumber, self.whitealpha, self.blackalpha = rgbtohwb(colour)
 
         self.basecolourbox.style.backgroundColor = "rgb({},{},{})".format(*self.hue)
         (x, y) = (int(self.whitealpha*255), int(self.blackalpha*255))
-        (self.colourpointer.left, self.colourpointer.top) = (x-5, y-5) 
+        (self.colourpointer.left, self.colourpointer.top) = (x-5, y-5)
 
         (x, y) = (huenumber//6, (huenumber%6)*8)
         (self.huepointer.left, self.huepointer.top) = (x-5, y-5)
-        
+
     def onSelect(self, event):
         self.hide()
         self.returnaction("rgb({}, {}, {})".format(*self.colour))

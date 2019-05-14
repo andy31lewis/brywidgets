@@ -110,17 +110,35 @@ input {
 }
 
 .spincontrol {
-    width: 7vmin;
-    height: 5vmin;
+    display: inline-block;
+    border: 1px solid blue;
+    background-color: white;
+    margin: 0.25em;
+    width: 3.5em;
+    height: 1em;
+}
+
+.spincontrol > img {
+    height: 100%;
+}
+
+.spincontrol > #minus {
+    float: left;
+    padding-right: 0.25em
+}
+
+.spincontrol > #plus {
+    float: right;
+    padding-left: 0.25em
 }
 
 .overlay {
-  position: fixed;
-  top: 0;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  visibility: hidden;
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    visibility: hidden;
 }
 
 .overlaypanel {
@@ -159,7 +177,7 @@ input {
     right: 0px;
     height: 100%;
 }
-    
+
 #colourpickerdialog {
     width: 380px;
     height: 360px;

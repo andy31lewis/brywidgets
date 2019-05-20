@@ -203,15 +203,22 @@ input {
     position: absolute;
     top: 30px;
     left: 286px;
-    width:60px;
+    width:70px;
     height: 30px;
+}
+
+#colourpickerdialog #hexcolourbox {
+    position: absolute;
+    top: 300px;
+    left: 286px;
+    width:80px;
 }
 
 #colourpickerdialog #colourpickerselect {
     position: absolute;
     top: 70px;
     left: 286px;
-    width:60px;
+    width:70px;
 }
 
 #colourpickerdialog #whitemask, #blackmask, #colourpointer, #hues, #huepointer {

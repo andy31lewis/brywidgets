@@ -31,6 +31,12 @@ def delete(element):
 def rgbtotuple(colour):
     return tuple([int(x) for x in colour[4:-1].split(",")])
 
+def tupletohex(colourtuple):
+    return "#"+sum((format(n, '02x') for n in colourtuple), '')
+
+def hextotuple(hexcolour):
+    return tuple(int(hexcolour[i:i+2], 16) for i in [1, 3, 5])
+
 def rgbtohwb(colour):
     if isinstance(colour, str): colour = rgbtotuple(colour)
     maxc = max(colour); maxi = colour.index(maxc)
@@ -142,7 +148,7 @@ class ListBox(html.SELECT):
 
 class InputBox(html.INPUT):
     '''Standard input box. Parameters:
-    enterkeyaction: function to use if the Enter key is pressed. Takes the keypress event as argument.'''
+    enterkeyaction: function to use if the Enter key is pressed. Takes the string value of the input as argument.'''
     def __init__(self, enterkeyaction, id=None):
         html.INPUT.__init__(self, id=id)
         self.enterkeyaction = enterkeyaction
@@ -150,7 +156,7 @@ class InputBox(html.INPUT):
 
     def onKeypress(self, event):
         if event.keyCode != 13: return
-        self.enterkeyaction(event)
+        self.enterkeyaction(self.value)
 
 class SpinControl(html.DIV):
     def __init__(self, initialvalue, minvalue, maxvalue, action, id=None):
@@ -301,7 +307,7 @@ class ColourPickerButton(html.BUTTON):
         global colourpickerdialog
         if not colourpickerdialog: colourpickerdialog = ColourPickerDialog()
         colourpickerdialog.returnaction = self.onChange
-        colourpickerdialog.setupfromcolour(self.style.backgroundColor)
+        colourpickerdialog.setupfromtuple(rgbtotuple(self.style.backgroundColor))
         colourpickerdialog.show()
 
     def onChange(self, colour):
@@ -791,9 +797,14 @@ class ColourPickerDialog(DialogBox):
 
         self.colourdemo = html.DIV("", id="colourdemo")
         self <= self.colourdemo
+        self.hexcolourbox = InputBox(self.onhexinput, id="hexcolourbox")
+        self <= self.hexcolourbox
         self <= Button("Select", self.onSelect, id="colourpickerselect")
 
-        self.setupfromcolour("rgb(0, 255, 255)")
+        self.setupfromtuple((0, 255, 255))
+
+    def onhexinput(self, hexcolour):
+        self.setupfromtuple(hextotuple(hexcolour))
 
     def selecthue(self, event):
         hueswatch = event.currentTarget.getBoundingClientRect()
@@ -804,6 +815,7 @@ class ColourPickerDialog(DialogBox):
         self.hue, self.colour = hwbtorgb(huenumber, self.whitealpha, self.blackalpha)
         self.basecolourbox.style.backgroundColor = "rgb({},{},{})".format(*self.hue)
         self.colourdemo.style.backgroundColor = "rgb({},{},{})".format(*self.colour)
+        self.hexcolourbox.value = tupletohex(self.colour)
 
     def selectcolour(self, event):
         x, y = event.clientX - event.currentTarget.getBoundingClientRect().left, event.clientY- event.currentTarget.getBoundingClientRect().top
@@ -811,10 +823,12 @@ class ColourPickerDialog(DialogBox):
         (self.whitealpha, self.blackalpha) = (x/255, y/255)
         hue, self.colour = hwbtorgb(self.hue, self.whitealpha, self.blackalpha)
         self.colourdemo.style.backgroundColor = "rgb({},{},{})".format(*self.colour)
+        self.hexcolourbox.value = tupletohex(self.colour)
 
-    def setupfromcolour(self, colour):
-        self.colour = rgbtotuple(colour)
-        self.colourdemo.style.backgroundColor = colour
+    def setupfromtuple(self, colour):
+        self.colour = colour
+        self.colourdemo.style.backgroundColor = "rgb({},{},{})".format(*colour)
+        self.hexcolourbox.value = tupletohex(self.colour)
 
         self.hue, huenumber, self.whitealpha, self.blackalpha = rgbtohwb(colour)
 

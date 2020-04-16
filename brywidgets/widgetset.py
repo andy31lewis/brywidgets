@@ -32,7 +32,7 @@ def rgbtotuple(colour):
     return tuple([int(x) for x in colour[4:-1].split(",")])
 
 def tupletohex(colourtuple):
-    return "#"+sum((format(n, '02x') for n in colourtuple), '')
+    return "#"+''.join(format(n, '02x') for n in colourtuple)
 
 def hextotuple(hexcolour):
     return tuple(int(hexcolour[i:i+2], 16) for i in [1, 3, 5])
@@ -819,7 +819,7 @@ class ColourPickerDialog(DialogBox):
 
     def selectcolour(self, event):
         x, y = event.clientX - event.currentTarget.getBoundingClientRect().left, event.clientY- event.currentTarget.getBoundingClientRect().top
-        (self.colourpointer.left, self.colourpointer.top) = (x-5, y-5)
+        (self.colourpointer.left, self.colourpointer.top) = (int(x)-5, int(y)-5)
         (self.whitealpha, self.blackalpha) = (x/255, y/255)
         hue, self.colour = hwbtorgb(self.hue, self.whitealpha, self.blackalpha)
         self.colourdemo.style.backgroundColor = "rgb({},{},{})".format(*self.colour)

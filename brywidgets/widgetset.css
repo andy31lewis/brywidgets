@@ -114,7 +114,7 @@ input {
     border: 1px solid blue;
     background-color: white;
     margin: 0.25em;
-    width: 3.5em;
+    width: 4em;
     height: 1em;
 }
 
@@ -263,14 +263,3 @@ input {
     cursor: default;
 }
 
-li.foldername {
-    background: url(folder.png) left top no-repeat;
-}
-
-li.filename {
-    background: url(file.png) left top no-repeat;
-}
-
-li.parentfolder {
-    background: url(uparrow.png) left top no-repeat;
-}

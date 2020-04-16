@@ -18,6 +18,8 @@
 from browser import document, window, ajax, alert, confirm
 import browser.html as html
 import os
+from .images import *
+
 head = document.select("head")[0]
 head.insertAdjacentElement("afterbegin", html.LINK(rel="stylesheet", href="brywidgets/widgetset.css", type="text/css"))
 
@@ -160,14 +162,14 @@ class InputBox(html.INPUT):
 
 class SpinControl(html.DIV):
     def __init__(self, initialvalue, minvalue, maxvalue, action, id=None):
-        decrease = html.IMG(src="brywidgets/minus.png", id="minus")
+        decrease = html.IMG(src=minus_b64, id="minus")
         decrease.bind("click", self.ondecrease)
-        increase = html.IMG(src="brywidgets/plus.png", id="plus")
+        increase = html.IMG(src=plus_b64, id="plus")
         increase.bind("click", self.onincrease)
         self.currentvalue = initialvalue
         self.minvalue = minvalue
         self.maxvalue = maxvalue
-        self.valuespan = html.SPAN(str(self.currentvalue))
+        self.valuespan = html.SPAN(str(self.currentvalue), style={"cursor":"default"})
         html.DIV.__init__(self,[decrease, self.valuespan, increase], Class="spincontrol")
         self.action = action
         if id: self.id = id
@@ -342,7 +344,7 @@ class FileOpenButton(html.BUTTON):
     initialfolder: the path to the folder initially displayed in the dialog.'''
     def __init__(self, returnaction, extlist=[], initialfolder=".", id=None):
         global fileopendialog
-        html.BUTTON.__init__(self, html.IMG(src="brywidgets/Open.png"), type="button", title="Open File...", id=id, Class="imagebutton")
+        html.BUTTON.__init__(self, html.IMG(src=open_b64), type="button", title="Open File...", id=id, Class="imagebutton")
         self.bind("click", self.onClick)
         if not fileopendialog: fileopendialog = FileOpenDialog(returnaction, extlist)
         self.initialfolder = initialfolder
@@ -362,7 +364,7 @@ class FileSaveAsButton(html.BUTTON):
     initialfolder: the path to the folder initially displayed in the dialog.'''
     def __init__(self, preparefile, returnaction=None, extlist=[], defaultextension=None, initialfolder=".", id=None):
         global filesavedialog
-        html.BUTTON.__init__(self, html.IMG(src="brywidgets/SaveAs.png"), type="button", title="Save File As...", id=id, Class="imagebutton")
+        html.BUTTON.__init__(self, html.IMG(src=saveas_b64), type="button", title="Save File As...", id=id, Class="imagebutton")
         self.bind("click", self.onClick)
         if not filesavedialog: filesavedialog = FileSaveDialog(returnaction, extlist, defaultextension)
         self.initialfolder = initialfolder
@@ -386,7 +388,7 @@ class FileSaveButton(html.BUTTON):
     initialfolder: the path to the folder initially displayed in the dialog.'''
     def __init__(self, preparefile, returnaction=None, extlist=[], defaultextension=None, initialfolder=".", id=None):
         global filesavedialog
-        html.BUTTON.__init__(self, html.IMG(src="brywidgets/Save.png"), type="button", title="Save File", id=id, Class="imagebutton")
+        html.BUTTON.__init__(self, html.IMG(src=save_b64), type="button", title="Save File", id=id, Class="imagebutton")
         self.bind("click", self.onClick)
         if not filesavedialog: filesavedialog = FileSaveDialog(returnaction, extlist, defaultextension)
         self.initialfolder = initialfolder
@@ -448,7 +450,7 @@ class LoginButton(html.BUTTON):
     This function takes one argument - the username.'''
     def __init__(self, returnaction=None, id=None):
         global logindialog
-        html.BUTTON.__init__(self, html.IMG(src="brywidgets/login.png"), type="button", title="Log In...", Class="imagebutton")
+        html.BUTTON.__init__(self, html.IMG(src=login_b64), type="button", title="Log In...", Class="imagebutton")
         self.bind("click", self.onClick)
         if not logindialog: logindialog = LoginDialog("Please type your username below:", returnaction)
         if id: self.id = id
@@ -461,7 +463,7 @@ class ImageFromSVGButton(html.BUTTON):
     Required paraemter:
     svgimage: the image to be converted to png.'''
     def __init__(self, svgimage, id=None):
-        html.BUTTON.__init__(self, html.IMG(src="brywidgets/Copy.png"), type="button", title="Copy or Save...", Class="imagebutton")
+        html.BUTTON.__init__(self, html.IMG(src=copy_b64), type="button", title="Copy or Save...", Class="imagebutton")
         self.bind("click", self.onClick)
         self.svgimage = svgimage
 
@@ -483,7 +485,7 @@ class OverlayPanel(html.DIV):
         html.DIV.__init__(self, "", Class="overlaypanel")
         if id: self.id=id
         self.overlay = Overlay(self)
-        closebutton = html.IMG(src="brywidgets/closebutton.png", Class = "closebutton")
+        closebutton = html.IMG(src=closebutton_b64, Class = "closebutton")
         closebutton.bind("click", self.close)
         titlebar = html.DIV([title, closebutton], Class="titlebar")
         self <= titlebar
@@ -534,7 +536,7 @@ class DialogBox(html.DIV):
         self.returnaction = returnaction
         if id: self.id=id
         self.overlay = Overlay(self)
-        closebutton = html.IMG(src="brywidgets/closebutton.png", Class = "closebutton")
+        closebutton = html.IMG(src=closebutton_b64, Class = "closebutton")
         closebutton.bind("click", self.close)
         titlebar = html.DIV([title, closebutton], Class="titlebar")
         self <= titlebar
@@ -686,11 +688,11 @@ class FileDialog(DialogBox):
 
         self.filelistbox.text = ""
         if len(self.path) > 1:
-            upalevel = html.LI("[Up a level]", Class="parentfolder")
+            upalevel = html.LI("[Up a level]", Class="parentfolder", style={"background": f"url({uparrow_b64}) no-repeat left top"})
             upalevel.bind("dblclick", self.onupdoubleclick)
             self.filelistbox <= upalevel
-        self.filelistbox <= (html.LI(x, Class="foldername") for x in self.folderlist)
-        self.filelistbox <= (html.LI(x, Class="filename") for x in self.filelist)
+        self.filelistbox <= (html.LI(x, Class="foldername", style={"background": f"url({folder_b64}) no-repeat left top"}) for x in self.folderlist)
+        self.filelistbox <= (html.LI(x, Class="filename", style={"background": f"url({file_b64}) no-repeat left top"}) for x in self.filelist)
         for item in self.filelistbox.select("li"): item.bind("click", self.onitemclick)
         for item in self.filelistbox.select("li.foldername"): item.bind("dblclick", self.onfolderdoubleclick)
         for item in self.filelistbox.select("li.filename"): item.bind("dblclick", self.onfiledoubleclick)
@@ -782,15 +784,15 @@ class ColourPickerDialog(DialogBox):
     def __init__(self, returnaction=None):
         DialogBox.__init__(self, "Colour Picker", returnaction, id="colourpickerdialog")
         self.basecolourbox = html.DIV("", id="basecolourbox")
-        self.basecolourbox <= html.IMG(src="brywidgets/whitemask.png", id="whitemask")
-        self.basecolourbox <= html.IMG(src="brywidgets/blackmask.png", id="blackmask")
-        self.colourpointer = html.IMG(src="brywidgets/circle.png", id="colourpointer")
+        self.basecolourbox <= html.IMG(src=whitemask_b64, id="whitemask")
+        self.basecolourbox <= html.IMG(src=blackmask_b64, id="blackmask")
+        self.colourpointer = html.IMG(src=circle_b64, id="colourpointer")
         self.basecolourbox <= self.colourpointer
         self.basecolourbox.bind("click", self.selectcolour)
         self <= self.basecolourbox
 
-        hueswatch = html.DIV(html.IMG(src="brywidgets/hues.png", id="hues"), id="hueswatch")
-        self.huepointer = html.IMG(src="brywidgets/circle.png", id="huepointer")
+        hueswatch = html.DIV(html.IMG(src=hues_b64, id="hues"), id="hueswatch")
+        self.huepointer = html.IMG(src=circle_b64, id="huepointer")
         hueswatch <= self.huepointer
         hueswatch.bind("click", self.selecthue)
         self <= hueswatch

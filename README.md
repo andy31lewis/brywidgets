@@ -6,9 +6,11 @@ There is now a "zero install" option available (see Introduction below). This me
 
 There is also one new widget: a `spincontrol` (to provide a more consistent interface, since browsers vary greatly in how they handle `<input type="number">`). 
 
-##Introduction
+## Introduction
 
 A collection of widgets for including in Brython projects.
+
+For a demo, see [this page](http://mathsanswers.org.uk/oddments/brywidgets/demo.html), which illustrates most of the functionality.
 
 To use, there are two options:
 

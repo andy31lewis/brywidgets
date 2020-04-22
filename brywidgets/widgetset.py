@@ -166,9 +166,10 @@ class ListBox(html.SELECT):
         if id: self.id = id
 
 class InputBox(html.INPUT):
-    '''Standard input box. Parameters:
-    enterkeyaction: function to use if the Enter key is pressed. Takes the string value of the input as argument.
-    Optional:
+    '''Standard input box.
+    Required parameter:
+    enterkeyaction: function to be called if the Enter key is pressed. Takes the string value of the input as argument.
+    Optional parameter:
     style: dictionary containing any CSS styling required'''
     def __init__(self, enterkeyaction, style=None, id=None):
         html.INPUT.__init__(self)
@@ -186,7 +187,7 @@ class SpinControl(html.DIV):
     Required parameters:
     initialvalue
     minvalue, maxvalue: values beyond which the control cannot be decreased or increased
-    action: function to use when the value is changed.'''
+    action: function to be called when the value is changed. Takes one parameter, the current value of the control.'''
     def __init__(self, initialvalue, minvalue, maxvalue, action, id=None):
         decrease = html.IMG(src=minus_b64, id="minus", style={"height":"100%", "float":"left"})
         decrease.bind("click", self.ondecrease)
@@ -219,7 +220,8 @@ class SpinControl(html.DIV):
 class Panel(html.DIV):
     '''Just a container with a default border. Optional parameters:
     items: contents of the panel
-    border: border of the panel, in css format (use None for no border)
+    border: border of the panel, in CSS format (use None for no border)
+    align: text-align, in CSS format (use none to leave as default)
     title: heading at the top of the panel. '''
     def __init__(self, items=None, border="1px solid white", align=None, title=None, id=None):
         html.DIV.__init__(self, "", Class="panel")
@@ -264,12 +266,12 @@ class Button(html.BUTTON):
     text: Text of the button (could be empty string)
     handler:  Function to be called on click. This function takes the click event as argument.
     Optional parameters:
-    style: dictionary containing any CSS styling required
+    bgcolour: background colour of the button.
     tooltip: text displayed when hovering over the button'''
-    def __init__(self, text, handler, style=None, tooltip=None, id=None):
+    def __init__(self, text, handler, bgcolour=None, tooltip=None, id=None):
         html.BUTTON.__init__(self, text, type="button", Class="button")
         self.bind("click", handler)
-        if style: self.style = style
+        if bgcolour: self.style.backgroundColor = bgcolour
         if tooltip: self.title = tooltip
         if id: self.id = id
 
@@ -279,10 +281,10 @@ class ImageButton(Button):
     icon: the path to its image
     handler:  Function to be called on click. This function takes the click event as argument.
     Optional parameters:
-    style: dictionary containing any CSS styling required
+    bgcolour: background colour of the button.
     tooltip: text displayed when hovering over the button'''
-    def __init__(self, icon, handler, style=None, tooltip=None, id=None):
-        Button.__init__(self, "", handler, style, tooltip, id)
+    def __init__(self, icon, handler, bgcolour=None, tooltip=None, id=None):
+        Button.__init__(self, "", handler, bgcolour, tooltip, id)
         self <= html.IMG(src=icon, style={"margin":"0px"})
         self.className = "imagebutton"
 
@@ -325,11 +327,12 @@ class ToggleImageButton(ToggleButton):
 
 class ColourPickerButton(html.BUTTON):
     '''Button which opens a colour picker, and then takes on the colour which is selected.
-    Required parameters:
+    Required parameter:
     returnaction: function to be called after a colour is selected
     This function takes two arguments: the colour selected, and the id of the button (which could be None).
     Optional parameters:
-    initialcolour: initial background colour of the button (in rgb() format).'''
+    label: Text on the button
+    initialcolour: initial background colour of the button (in rgb() format). If omitted the default colour rgb(242, 241, 240) is used.'''
     def __init__(self, returnaction, label="", initialcolour=None, id=None):
         html.BUTTON.__init__(self, label, type="button", title="Open Colour Picker...", Class="button")
         self.style.backgroundColor = initialcolour if initialcolour else "rgb(242, 241, 240)"
@@ -519,7 +522,9 @@ class ColourPickerDialog(DialogBox):
         self <= self.colourdemo
         self.hexcolourbox = InputBox(self.onhexinput, style=position(286, 300, 80))
         self <= self.hexcolourbox
-        self <= Button("Select", self.onSelect, style=position(286, 70, 70))
+        self <= (selectbutton := Button("Select", self.onSelect))
+        selectbutton.style=position(286, 70, 70)
+        selectbutton.style.margin = "0px"
 
         self.setupfromtuple((0, 255, 255))
 

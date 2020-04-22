@@ -50,10 +50,10 @@ panel1 = ws.Panel(title="The 100 greatest singles of all time - click to find th
 spincontrol = ws.SpinControl(10, 5, 15, setrowcount, "spinner")
 listbox = ws.ListBox(artistdict.keys(), showartist, 10)
 togglebutton = ws.ToggleButton("Button is Up!", toggleclick)
-panel1 <= ws.ColumnPanel([html.P("(This Panel shows a ListBox, a Dropdown, a ColourPickerButton and a ToggleButton.)"),
-            html.P(["Number of rows:", spincontrol]), html.DIV([listbox, html.P("&nbsp", id="artist"),
+panel1 <= ws.ColumnPanel([html.P("(This Panel shows a SpinControl, a ListBox, a Dropdown, a ColourPickerButton and a ToggleButton.)"),
+            html.P(["Number of rows:", spincontrol]), listbox, html.P("&nbsp", id="artist"),
             ws.DropDown(sorted(set(artistdict.values())), countsongs), html.P("&nbsp", id="songcount"),
-            ws.ColourPickerButton(changecolour, "Choose Colour"), togglebutton])])
+            ws.GridPanel(2, 1, [ws.ColourPickerButton(changecolour, "Choose Colour"), togglebutton])])
 
 panel2 = ws.Panel(title="Opening and saving files", id="panel2")
 panel2 <= ws.ColumnPanel([html.P("(This is a FileOpenButton, FileSaveButton and FileSaveAsButton)"),

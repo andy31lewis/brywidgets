@@ -187,13 +187,16 @@ class SpinControl(html.DIV):
     Required parameters:
     initialvalue
     minvalue, maxvalue: values beyond which the control cannot be decreased or increased
-    action: function to be called when the value is changed. Takes one parameter, the current value of the control.'''
-    def __init__(self, initialvalue, minvalue, maxvalue, action, id=None):
+    action: function to be called when the value is changed. Takes one parameter, the current value of the control.
+    Optional parameter:
+    stepvalue: the amount by which the value is increased or decreased (default is 1)'''
+    def __init__(self, initialvalue, minvalue, maxvalue, action, stepvalue=1, id=None):
         decrease = html.IMG(src=minus_b64, id="minus", style={"height":"100%", "float":"left"})
         decrease.bind("click", self.ondecrease)
         increase = html.IMG(src=plus_b64, id="plus", style={"height":"100%", "float":"right"})
         increase.bind("click", self.onincrease)
         self.currentvalue = initialvalue
+        self.stepvalue = stepvalue
         self.minvalue = minvalue
         self.maxvalue = maxvalue
         widthems = max(len(str(minvalue)), len(str(maxvalue)))*0.6 + 3
@@ -208,12 +211,12 @@ class SpinControl(html.DIV):
         self.valuespan.text = str(self.currentvalue)
 
     def ondecrease(self, event):
-        if self.currentvalue-1 >= self.minvalue: self.currentvalue -= 1
+        if self.currentvalue-self.stepvalue >= self.minvalue: self.currentvalue -= self.stepvalue
         self.valuespan.text = str(self.currentvalue)
         self.action(self.currentvalue)
 
     def onincrease(self, event):
-        if self.currentvalue+1 <= self.maxvalue: self.currentvalue += 1
+        if self.currentvalue+self.stepvalue <= self.maxvalue: self.currentvalue += self.stepvalue
         self.valuespan.text = str(self.currentvalue)
         self.action(self.currentvalue)
 
@@ -315,6 +318,20 @@ class ToggleButton(Button):
     def onClick(self, event):
         self.selected = False if self.selected else True
         self.handler(event)
+
+class RadioButton(html.SPAN):
+    def __init__(self, radiogroup, radioid, label, selected=False, tooltip=None, action=None, id=None):
+        html.SPAN.__init__(self)
+        objid = id if id else f"{radiogroup}_{radioid}"
+        self.button = html.INPUT(type="radio", name=radiogroup, value=radioid, id=objid)
+        self.label = html.LABEL(label)
+        self.label.attrs["for"] = objid
+        self <= [self.button, self.label]
+        if selected: self.button.checked = True
+        if tooltip:
+            self.button.title = tooltip
+            self.label.title = tooltip
+        if action: self.button.bind("change", action)
 
 class ToggleImageButton(ToggleButton):
     '''Button with an image.  The button remains depressed when clicked, until clicked again or raised by other means.

@@ -49,7 +49,7 @@ def rgbtohwb(colour):
     if isinstance(colour, str): colour = rgbtotuple(colour)
     maxc = max(colour); maxi = colour.index(maxc)
     minc = min(colour); mini = colour.index(minc)
-    whitealpha = minc/maxc
+    whitealpha = 1 if maxc == 0 else minc/maxc
     blackalpha = 1 - maxc/255
 
     hue = (R, G, B) = (0, 255, 255) if maxc==minc else tuple(int(255*(c-minc)/(maxc-minc)) for c in colour)
@@ -359,9 +359,12 @@ class ColourPickerButton(html.BUTTON):
 
     def onClick(self, event):
         global colourpickerdialog
-        if not colourpickerdialog: colourpickerdialog = ColourPickerDialog()
+        if not colourpickerdialog:
+            colourpickerdialog = ColourPickerDialog()
+            colourpickerdialog.recentcolours[0].style.backgroundColor = self.style.backgroundColor
+            colourpickerdialog.recent[0] = rgbtotuple(self.style.backgroundColor)
         colourpickerdialog.returnaction = self.onChange
-        if self.style.backgroundColor: colourpickerdialog.setupfromtuple(rgbtotuple(self.style.backgroundColor))
+        colourpickerdialog.setupfromtuple(rgbtotuple(self.style.backgroundColor))
         colourpickerdialog.show()
 
     def onChange(self, colour):
@@ -389,13 +392,15 @@ class ImageFromSVGButton(html.BUTTON):
     '''Button which opens an OverlayPanel showing a png image created from an SVG image.
     Required parameter:
     svgimage: the image to be converted to png.'''
-    def __init__(self, svgimage, id=None):
+    def __init__(self, svgimage, preprocess=None, id=None):
         html.BUTTON.__init__(self, html.IMG(src=copy_b64), type="button", title="Copy or Save...", Class="imagebutton")
         self.bind("click", self.onClick)
         self.svgimage = svgimage
+        if preprocess: self.preprocess = preprocess
 
     def onClick(self, event):
         global imagefromsvg
+        if self.preprocess: self.preprocess()
         if not imagefromsvg: imagefromsvg = ImageFromSVG()
         imagefromsvg.show()
         imagefromsvg.SVGtoPNG(self.svgimage)
@@ -535,18 +540,28 @@ class ColourPickerDialog(DialogBox):
         hueswatch.bind("click", self.selecthue)
         self <= hueswatch
 
-        self.colourdemo = html.DIV("", style=position(286, 30, 70, 30))
-        self <= self.colourdemo
-        self.hexcolourbox = InputBox(self.onhexinput, style=position(286, 300, 80))
+        self.hexcolourbox = InputBox(self.onhexinput, style=position(280, 30, 80))
         self <= self.hexcolourbox
+        self.colourdemo = html.DIV("", style=position(286, 70, 70, 30))
+        self <= self.colourdemo
         self <= (selectbutton := Button("Select", self.onSelect))
-        selectbutton.style=position(286, 70, 70)
+        selectbutton.style=position(286, 110, 70)
         selectbutton.style.margin = "0px"
-
+        self.recentcolours = [html.DIV("", id=f"recent{i}", style=position(280+30*(i%3), 150+30*(i//3), 25, 25)) for i in range(15)]
+        for i in range(15):
+            self.recentcolours[i].style = {"border":"1px solid black", "background-color":"white"}
+            self.recentcolours[i].bind("click", self.onrecentchoice)
+        self <= self.recentcolours
+        self.recent = [(255, 255, 255)] * 15
         self.setupfromtuple((0, 255, 255))
 
     def onhexinput(self, hexcolour):
         self.setupfromtuple(hextotuple(hexcolour))
+
+    def onrecentchoice(self, event):
+        i = int(event.target.id[6:])
+        self.setupfromtuple(self.recent[i])
+
 
     def selecthue(self, event):
         hueswatch = event.currentTarget.getBoundingClientRect()
@@ -582,6 +597,9 @@ class ColourPickerDialog(DialogBox):
         (self.huepointer.left, self.huepointer.top) = (x-5, y-5)
 
     def onSelect(self, event):
+        if self.colour not in self.recent: self.recent = [self.colour]+self.recent[:-1]
+        for i in range(15):
+            self.recentcolours[i].style.backgroundColor = "rgb({},{},{})".format(*self.recent[i])
         self.hide()
         self.returnaction("rgb({}, {}, {})".format(*self.colour))
 

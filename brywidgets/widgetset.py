@@ -226,8 +226,9 @@ class Panel(html.DIV):
     border: border of the panel, in CSS format (use None for no border)
     align: text-align, in CSS format (use none to leave as default)
     title: heading at the top of the panel. '''
-    def __init__(self, items=None, border="1px solid white", align=None, title=None, id=None):
+    def __init__(self, items=None, border="1px solid white", align=None, className=None, title=None, id=None):
         html.DIV.__init__(self, "", Class="panel")
+        if className: self.classList.add(className)
         if id: self.id = id
         if border: self.style.border = border
         if align: self.style.textAlign = align
@@ -237,17 +238,19 @@ class Panel(html.DIV):
 class RowPanel(html.DIV):
     '''Container which lays its contents out in a row. Optional parameter:
     items: contents of the panel'''
-    def __init__(self, items=None, id=None):
-        html.DIV.__init__(self, "", Class="rowpanel", style={"display":"flex", "justify-content":"center", "align-items":"center"})
+    def __init__(self, items=None, className=None, id=None):
+        html.DIV.__init__(self, "", Class="rowpanel", style={"display":"flex"})
         if items: self <= items
+        if className: self.classList.add(className)
         if id: self.id = id
 
 class ColumnPanel(html.DIV):
     '''Container which lays its contents out in a column. Optional parameter:
     items: contents of the panel'''
-    def __init__(self, items=None, id=None):
-        html.DIV.__init__(self, "", Class="columnpanel", style={"display":"flex", "flex-direction":"column", "justify-content":"center", "align-items":"center"})
+    def __init__(self, items=None, className=None, id=None):
+        html.DIV.__init__(self, "", Class="columnpanel", style={"display":"flex", "flex-direction":"column"})
         if items: self <= items
+        if className: self.classList.add(className)
         if id: self.id = id
 
 class GridPanel(html.DIV):
@@ -450,15 +453,30 @@ class ImageFromSVG(OverlayPanel):
     def __init__(self):
         OverlayPanel.__init__(self, "Right click to copy or save image", style="standard")
         self.canvas = html.CANVAS(id="canvascopy")
-        self <= self.canvas
+        #self <= self.canvas
+        #self.pngimage = html.IMG(id="pngcopy")
+        #self <= self.pngimage
 
     def drawimage(self, event):
         ctx = self.canvas.getContext("2d")
         ctx.drawImage(self.svgimage, 0, 0)
-        png = self.canvas.toDataURL("image/png")
-        self.pngimage = html.IMG(src=png, id="pngcopy")
+        self.canvas.toBlob(self.copyimage)
+
+    def copyimage(self, blob):
+        #def copycompleted(value):  ***navigator.clipboard only available over https***
+        #    print(value)
+        #    alert("The tessellation should have been copied to the clipboard ready to paste into a document, email etc.\n\n"+
+        #        "Alternatively, right-click or long-press on this page to save it.")
+        blobURL = window.URL.createObjectURL(blob)
+        self.pngimage = html.IMG(src=blobURL, id="pngcopy")
         self <= self.pngimage
-        window.URL.revokeObjectURL(png)
+        #self.pngimage.attrs["src"] = blobURL
+        #try:
+        #    clip = window.ClipboardItem.new({'image/png': blob})
+        #except AttributeError:
+        #    return
+        #window.navigator.clipboard.write([clip]).then(copycompleted)
+        #window.URL.revokeObjectURL(blobURL)
 
     def SVGtoPNG(self, SVG):
         xmls = window.XMLSerializer.new()
@@ -467,7 +485,7 @@ class ImageFromSVG(OverlayPanel):
         self.canvas.attrs["height"] = SVG.attrs["height"]
         self.svgimage = html.IMG()
         self.svgimage.bind("load", self.drawimage)
-        self.svgimage.src = 'data:image/svg+xml; charset=utf8, '+window.encodeURIComponent(svgString);
+        self.svgimage.attrs["src"] = 'data:image/svg+xml; charset=utf8, '+window.encodeURIComponent(svgString);
 
     def close(self, event):
         delete(self.pngimage)

@@ -47,7 +47,7 @@ page1 <= (html.H1("Brywidgets Demo"),
                 The buttons on the right are laid out using GridPanels"""))
 
 panel1 = ws.Panel(title="The 100 greatest singles of all time - click to find the artist", id="panel1")
-spincontrol = ws.SpinControl(10, 5, 15, setrowcount, "spinner")
+spincontrol = ws.SpinControl(10, 5, 15, setrowcount, id="spinner")
 listbox = ws.ListBox(artistdict.keys(), showartist, 10)
 togglebutton = ws.ToggleButton("Button is Up!", toggleclick)
 panel1 <= ws.ColumnPanel([html.P("(This Panel shows a SpinControl, a ListBox, a Dropdown, a ColourPickerButton and a ToggleButton.)"),

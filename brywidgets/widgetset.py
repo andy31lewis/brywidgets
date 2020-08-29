@@ -411,7 +411,7 @@ class ImageFromSVGButton(html.BUTTON):
 class Overlay(html.DIV):
     '''Not intended to be created by end user'''
     def __init__(self, contents):
-        styledict = {"position":"fixed", "top":"0px", "bottom":"0px", "left":"0px", "right":"0px", "visibility":"hidden", "display":"flex", "align-items":"center"}
+        styledict = {"position":"fixed", "top":"0px", "bottom":"0px", "left":"0px", "right":"0px", "visibility":"hidden", "background-color":"transparent", "display":"flex", "align-items":"center"}
         html.DIV.__init__(self, contents, style=styledict, Class="overlay")
 
 class OverlayPanel(html.DIV):
@@ -503,11 +503,11 @@ class DialogBox(html.DIV):
     Available methods: show, hide, close (the last two are identical unless amended in a subclass).'''
     def __init__(self, title, returnaction=None, content=None, style=None, size=None, id=None):
         dialogstyle = {"position":"relative", "z-index":"1", "margin":"auto"}
-        titlebarstyle = {"position":"relative", "width":"100%", "height":"1.2em", "text-align":"center"}
+        titlebarstyle = {"position":"relative", "width":"100%", "height":"1.3em", "text-align":"center"}
         if style:
             if style == "standard":
                 style = {"width":"33%", "background-color":"lightgrey", "border":"1px solid grey", "text-align":"center", "padding-bottom":"0.5em"}
-                titlebarstyle. update({"background-color":"grey", "color":"white"})
+                titlebarstyle.update({"background-color":"grey", "color":"white"})
             dialogstyle.update(style)
         if size:
             (width, height) = size
@@ -515,9 +515,10 @@ class DialogBox(html.DIV):
             dialogstyle["height"] = height
         html.DIV.__init__(self, "", style=dialogstyle, Class="dialogbox")
         closebuttonstyle = {"position":"absolute", "top":"0px", "right":"0px", "height":"100%"}
-        closebutton = html.IMG(src=closebutton_b64, style=closebuttonstyle, Class = "closebutton")
-        closebutton.bind("click", self.close)
-        titlebar = html.DIV([title, closebutton], style=titlebarstyle, Class="titlebar")
+        self.closebutton = html.IMG(src=closebutton_b64, style=closebuttonstyle, Class = "closebutton", id="closebutton")
+        self.closebutton.bind("click", self.close)
+        self.titletext = html.SPAN(title)
+        titlebar = html.DIV([self.titletext, self.closebutton], style=titlebarstyle, Class="titlebar")
         self <= titlebar
         if content: self <= content
         self.returnaction = returnaction
@@ -533,6 +534,53 @@ class DialogBox(html.DIV):
 
     def close(self, event):
         self.hide()
+
+class AlertDialog(DialogBox):
+    def __init__(self):
+        self.messagediv = html.DIV(style={"background-color":"inherit", "margin":"1em 1em 3em 1em"})
+        super().__init__("Message", content=self.messagediv, style="standard")
+        self.okbutton = Button("OK", self.close)
+        self.okbutton.style = {"position":"absolute", "right":"5px", "bottom":"5px"}
+        self <= self.okbutton
+
+    def showmessage(self, message, title=None):
+        self.messagediv.innerHTML = message.replace("\n", "<br/>\n")
+        if title: self.titletext.innerHTML = title
+        self.show()
+        self.okbutton.focus()
+
+class PromptDialog(DialogBox):
+    def __init__(self):
+        self.question = html.P(style={"margin-right":"1em"}, id="query")
+        self.entrybox = html.INPUT(id="reply")
+        self.entrybox.bind("keypress", self.onKeypress)
+        self.querydiv = html.DIV([self.question, self.entrybox], style={"background-color":"inherit", "margin-top":"1em", "margin-bottom":"3em"})
+        super().__init__("Query", content=self.querydiv, style="standard")
+        okbutton = Button("OK", self.respond)
+        okbutton.style = {"position":"absolute", "right":"5px", "bottom":"5px"}
+        self <= okbutton
+        self.closebutton.unbind("click")
+        self.closebutton.bind("click", self.respond)
+
+    def onKeypress(self, event):
+        if event.keyCode == 13: self.respond(event)
+
+    def showquery(self, message, action=None, title=None, default=None):
+        self.question.innerHTML = message
+        if title: self.titletext.innerHTML = title
+        if default: self.entrybox.value = default
+        self.action = action
+        self.show()
+        self.entrybox.focus()
+
+    def respond(self, event):
+        if event.target.id == "closebutton":
+            userinput = False
+        else:
+            userinput = self.entrybox.value
+            if not userinput: return
+        super().close(event)
+        if self.action: self.action(userinput)
 
 class ColourPickerDialog(DialogBox):
     '''Not intended to be created by end user.  To use, include a ColourPicker(Image)Button in the page.'''
@@ -691,7 +739,7 @@ class UserFileOpenButton(FileOpenButton):
 
     def onClick(self, event):
         if currentuser is None:
-            alert("In order to save or open files, you need to log in.\nPlease click the login button.")
+            showalert("In order to save or open files, you need to log in.\nPlease click the login button.")
         else:
             fileopendialog.open("./users/"+currentuser)
 
@@ -703,7 +751,7 @@ class UserFileSaveAsButton(FileSaveAsButton):
 
     def onClick(self, event):
         if currentuser is None:
-            alert("In order to save or open files, you need to log in.\nPlease click the login button.")
+            showalert("In order to save or open files, you need to log in.\nPlease click the login button.")
         else:
             filesavedialog.filetosave = self.preparefile()
             filesavedialog.open("./users/"+currentuser)
@@ -716,7 +764,7 @@ class UserFileSaveButton(FileSaveButton):
 
     def onClick(self, event):
         if currentuser is None:
-            alert("In order to save or open files, you need to log in.\nPlease click the login button.")
+            showalert("In order to save or open files, you need to log in.\nPlease click the login button.")
         else:
             filesavedialog.filetosave = self.preparefile()
             if filesavedialog.filename:
@@ -973,6 +1021,22 @@ class FileSaveDialog(FileDialog):
 
     def closedialog(self, request):
         self.hide()
+
+def showalert(message, title=None):
+    global alertdialog
+    try:
+        alertdialog.showmessage(message, title)
+    except NameError:
+        alertdialog = AlertDialog()
+        alertdialog.showmessage(message, title)
+
+def showprompt(message, action=None, title=None, default=None):
+    global promptdialog
+    try:
+        promptdialog.showquery(message, action, title, default)
+    except NameError:
+        promptdialog = PromptDialog()
+        promptdialog.showquery(message, action, title, default)
 
 colourpickerdialog = None
 fileopendialog = None

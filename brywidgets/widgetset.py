@@ -336,6 +336,19 @@ class RadioButton(html.SPAN):
             self.label.title = tooltip
         if action: self.button.bind("change", action)
 
+class CheckBox(html.SPAN):
+    def __init__(self, label, objid, selected=False, tooltip=None, action=None):
+        html.SPAN.__init__(self)
+        self.button = html.INPUT(type="checkbox", name=objid, id=objid)
+        self.label = html.LABEL(label)
+        self.label.attrs["for"] = objid
+        self <= [self.button, self.label]
+        if selected: self.button.checked = True
+        if tooltip:
+            self.button.title = tooltip
+            self.label.title = tooltip
+        if action: self.button.bind("change", action)
+
 class ToggleImageButton(ToggleButton):
     '''Button with an image.  The button remains depressed when clicked, until clicked again or raised by other means.
     For parameters see ImageButton.'''
@@ -399,7 +412,7 @@ class ImageFromSVGButton(html.BUTTON):
         html.BUTTON.__init__(self, html.IMG(src=copy_b64), type="button", title="Copy or Save...", Class="imagebutton")
         self.bind("click", self.onClick)
         self.svgimage = svgimage
-        if preprocess: self.preprocess = preprocess
+        self.preprocess = preprocess if preprocess else None
 
     def onClick(self, event):
         global imagefromsvg
@@ -813,7 +826,7 @@ class LoginDialog(DialogBox):
                 currentuser = username
                 if self.returnaction: self.returnaction(username)
             else:
-                alert("Sorry - this username does not exist.")
+                showalert("Sorry - this username does not exist.")
         username = self.loginbox.value
         request = ajax.ajax()
         request.bind("complete", oncomplete)
@@ -847,7 +860,7 @@ class UsernameDialog(DialogBox):
         def oncomplete(request):
             response = request.text.strip()
             if response == "True":
-                alert("Sorry - this username is already in use.")
+                showalert("Sorry - this username is already in use.")
             else:
                 self.hide()
                 self.createusername(username)
@@ -865,7 +878,7 @@ class UsernameDialog(DialogBox):
             if response == "OK":
                 currentuser = username
                 if self.returnaction: self.returnaction(username)
-                alert("Username created.  You are now logged in.")
+                showalert("Username created.  You are now logged in.")
         request = ajax.ajax()
         request.bind("complete", oncomplete)
         request.open("POST", "brywidgets/createfolder.cgi", True)
@@ -889,6 +902,7 @@ class FileDialog(DialogBox):
         if currentuser or self.path is None: self.path = [initialfolder]
         self.getfilelist("/".join(self.path))
         self.show()
+        self.fileinput.focus()
 
     def onitemclick(self, event):
         for item in self.filelistbox.select("li"): item.style.backgroundColor = "white"
@@ -983,7 +997,7 @@ class FileSaveDialog(FileDialog):
     def onsavebutton(self, event):
         filename = self.fileinput.value
         if filename == "":
-            alert("No name given for the file")
+            showalert("No name given for the file")
             return
         if self.defaultextension:
             ext = "."+self.defaultextension

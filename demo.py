@@ -16,7 +16,6 @@ def changecolour(colour, id):
 
 def toggleclick(event):
     togglebutton.text = "Button down" if togglebutton.selected else "Button is Up!"
-    ws.showprompt("Button has been toggled.", title="Message")
 
 def showfile(filecontent, filename):
     document["usertext"].value = filecontent
@@ -36,7 +35,7 @@ def setrowcount(n):
 #################################################
 
 page1 = ws.NotebookPage("Demo", "powderblue", id="page1")
-page2 = ws.NotebookPage("Brython code", "khaki", html.TEXTAREA(open("demo.py").read()), tabwidth=None, id="page2")
+page2 = ws.NotebookPage("Brython code", "khaki", html.TEXTAREA(open("demo.py").read()), id="page2")
 page3 = ws.NotebookPage("CSS", "lightgreen", html.TEXTAREA(open("demo.css").read()), id="page3")
 page4 = ws.NotebookPage("HTML", "lightpink", html.TEXTAREA(open("demo.html").read()), id="page4")
 document <= ws.Notebook([page1, page2, page3, page4])

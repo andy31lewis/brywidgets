@@ -73,6 +73,7 @@ def hwbtorgb(hue, whitealpha, blackalpha):
     return hue, colour
 
 class Global():
+    '''Global parameters'''
     alertStyle = "standard"
     promptStyle = "standard"
 
@@ -109,10 +110,7 @@ class Notebook(html.DIV):
 
 class NotebookPage(html.DIV):
     '''A page in a notebook.  Create with a title (which appears on its tab), and a background colour.
-    Optionally include content at creation time, or else add it later.
-    For external CSS styling of pages use class .notebookpage, or give each page an id and use #(pageid).
-    Set the width of the tab using CSS, or set it to None to use external CSS styling,
-    either for class .notebooktab or id #(pageid)_tab'''
+    Optionally include content at creation time, or else add it later.'''
     def __init__(self, title, bgcolour, content=None, tabwidth="10%", className=None, id=None):
         html.DIV.__init__(self, "", style={"background-color":bgcolour}, Class="notebookpage")
         self.title = title
@@ -146,8 +144,7 @@ class DropDown(html.SELECT):
     choices: a list of options
     onchange: function to be called when the user chooses a different option.  Takes the change event as argument.
     Optional parameters:
-    initialchoice: index (counting from 0) of the inital choice.
-    For external CSS styling use class .dropdown, or give the dropdown an id and use #(id).'''
+    initialchoice: index (counting from 0) of the inital choice.'''
     def __init__(self, choices, onchange, initialchoice=None, className=None, id=None):
         html.SELECT.__init__(self, "", Class="dropdown")
         self <= (html.OPTION(text) for text in choices)
@@ -163,8 +160,7 @@ class ListBox(html.SELECT):
     onchange: function to be called when the user chooses a different option.  Takes the change event as argument.
     Optional parameters:
     size: number of choices to be displayed
-    initialchoice: index (counting from 0) of the inital choice.
-    For external CSS styling use class .listbox, or give the listbox an id and use #(id).'''
+    initialchoice: index (counting from 0) of the inital choice.'''
     def __init__(self, choices, onchange, size=None, initialchoice=None, className=None, id=None):
         html.SELECT.__init__(self, "", Class="listbox")
         self <= (html.OPTION(text) for text in choices)
@@ -177,12 +173,9 @@ class ListBox(html.SELECT):
 class InputBox(html.INPUT):
     '''Standard input box.
     Required parameter:
-    enterkeyaction: function to be called if the Enter key is pressed. Takes the string value of the input as argument.
-    Optional parameter:
-    style: dictionary containing any CSS styling required'''
-    def __init__(self, enterkeyaction, style=None, className=None, id=None):
+    enterkeyaction: function to be called if the Enter key is pressed. Takes the string value of the input as argument.'''
+    def __init__(self, enterkeyaction, className=None, id=None):
         html.INPUT.__init__(self, Class="inputbox")
-        if style: self.style = style
         self.enterkeyaction = enterkeyaction
         self.bind("keypress", self.onKeypress)
         if className: self.classList.add(className)
@@ -345,6 +338,15 @@ class ToggleImageButton(ToggleButton):
         self.classList.add("toggleimagebutton")
 
 class RadioButton(html.SPAN):
+    '''One of a group of buttons - selecting one unselects the others.
+    Required parameters:
+    radiogroup: Name of the group to which the button belongs
+    radioid: identifies this particular button within the group
+    label: text to go next to the button
+    Optional parameters:
+    selected: if set to True, this button will be selected initially
+    action: name of a function to be called when the button is clicked. Takes the click event as parameter.
+    tooltip: text displayed when hovering over the button.'''
     def __init__(self, radiogroup, radioid, label, selected=False, tooltip=None, action=None, className=None, id=None):
         html.SPAN.__init__(self)
         if className: self.classList.add(className)
@@ -360,6 +362,14 @@ class RadioButton(html.SPAN):
         if action: self.button.bind("change", action)
 
 class CheckBox(html.SPAN):
+    '''A tickbox - clicking either selects or deselects it.
+    Required parameters:
+    label: text to go next to the checkbox
+    objid: serves as both the name and the id of the checkbox
+    Optional parameters:
+    selected: if set to True, this button will be selected initially
+    action: name of a function to be called when the button is clicked. Takes the click event as parameter.
+    tooltip: text displayed when hovering over the button.'''
     def __init__(self, label, objid, selected=False, tooltip=None, action=None, className=None):
         html.SPAN.__init__(self)
         self.button = html.INPUT(type="checkbox", name=objid, id=objid)
@@ -642,7 +652,8 @@ class ColourPickerDialog(DialogBox):
         hueswatch.bind("click", self.selecthue)
         self <= hueswatch
 
-        self.hexcolourbox = InputBox(self.onhexinput, style=position(280, 30, 80))
+        self.hexcolourbox = InputBox(self.onhexinput)
+        self.hexcolourbox.style = position(280, 30, 80)
         self <= self.hexcolourbox
         self.colourdemo = html.DIV("", style=position(286, 70, 70, 30))
         self <= self.colourdemo
@@ -1080,7 +1091,10 @@ def showalert(message, title=None):
 
 def showprompt(message, action=None, title=None, default=None):
     '''Similar to javascript prompt function.
-    default is the text which will appear in the prompt box by default.
+    Parameters:
+    action: name of a function which will be called when the dialog is closed by a click or by pressing the Enter key.
+    This function takes one parameter - the text typed in the prompt box.
+    default: text which will appear in the prompt box by default.
     By default, standard dialog box styling will be used.
     If the variable Global.promptStyle is set to None,  the prompt will be styled using CSS styling for the .dialogbox class.
     If desired, this can be overridden by setting up styling for the id #promptdialog.'''

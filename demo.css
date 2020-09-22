@@ -51,11 +51,6 @@ p {
     font-size: 1rem;
 }
 
-.dropdown {
-    background-color: cyan;
-    border-width: 0px
-}
-
 textarea {
     display: block;
     height: 90vh;

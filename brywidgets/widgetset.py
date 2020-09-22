@@ -72,6 +72,10 @@ def hwbtorgb(hue, whitealpha, blackalpha):
     colour = tuple(int((1-blackalpha)*(C*(1-whitealpha)+255*whitealpha)) for C in hue)
     return hue, colour
 
+class Global():
+    alertStyle = "standard"
+    promptStyle = "standard"
+
 class Notebook(html.DIV):
     '''A tabbed set of pages; switch between pages by clicking on a tab.
     To use, create pages by subclassing (or instantiating) NotebookPage, then create the notebook.
@@ -80,24 +84,26 @@ class Notebook(html.DIV):
         page2 = NotebookPage("Second page", "powderblue")
         nb = Notebook([page1, page2])
     More pages can be added using nb.addpage.
-    For external CSS styling of the whole notebook use class .notebook, or give the notebook an id and use #(id).
     The height of the tabs is automatically set to accomodate 1 line of text, but can be adjusted
     by specifying the parameter tabheight in CSS units.'''
 
-    def __init__(self, pagelist=[], tabheight="2em", id=None):
+    def __init__(self, pagelist=[], tabheight="2em", className=None, id=None):
         html.DIV.__init__(self, "", Class="notebook")
-        self.tabrow = html.DIV("", Class="notebooktabrow", style={"height":tabheight, "text-align":"center"})
+        self.clearfloat = html.DIV(style={"clear":"both"})
+        self.tabrow = html.DIV(self.clearfloat, Class="notebooktabrow", style={"text-align":"center"})
+        self.tabheight = tabheight
         self <= self.tabrow
         self.pagelist = []
         for page in pagelist: self.addpage(page)
+        if className: self.classList.add(className)
         if id: self.id = id
 
     def addpage(self, page):
         self <= page
-        tab = NotebookTab(self, len(self.pagelist), page.title, page.tabwidth)
+        tab = NotebookTab(self, len(self.pagelist), page.title, self.tabheight, page.tabwidth)
         tab.style.backgroundColor = page.style.backgroundColor
         if page.id: tab.id = page.id+"_tab"
-        self.tabrow <= tab
+        self.tabrow.insertBefore(tab, self.clearfloat)
         page.style.display="block" if len(self.pagelist)==0 else "none"
         self.pagelist.append(page)
 
@@ -107,10 +113,11 @@ class NotebookPage(html.DIV):
     For external CSS styling of pages use class .notebookpage, or give each page an id and use #(pageid).
     Set the width of the tab using CSS, or set it to None to use external CSS styling,
     either for class .notebooktab or id #(pageid)_tab'''
-    def __init__(self, title, bgcolour, content=None, tabwidth="10%", id=None):
-        html.DIV.__init__(self, "", style={"background-color":bgcolour, "border-top":"0.05px solid "+bgcolour}, Class="notebookpage")
+    def __init__(self, title, bgcolour, content=None, tabwidth="10%", className=None, id=None):
+        html.DIV.__init__(self, "", style={"background-color":bgcolour}, Class="notebookpage")
         self.title = title
         self.tabwidth = tabwidth
+        if className: self.classList.add(className)
         if id: self.id = id
         if content: self <= content
 
@@ -120,8 +127,8 @@ class NotebookPage(html.DIV):
 class NotebookTab(html.DIV):
     '''Not intended to be created by end user.
     A tab at the top of a NotebookPage.'''
-    def __init__(self, notebook, index, title, width):
-        html.DIV.__init__(self, html.P(title, style={"margin":"0.4em"}), Class="notebooktab", style={"height":"100%", "float":"left", "cursor":"pointer"})
+    def __init__(self, notebook, index, title, height, width):
+        html.DIV.__init__(self, html.P(title, style={"margin":"0.4em"}), Class="notebooktab", style={"height":height, "float":"left", "cursor":"pointer"})
         if width: self.style.width = width
         self.notebook = notebook
         self.index = index
@@ -141,11 +148,12 @@ class DropDown(html.SELECT):
     Optional parameters:
     initialchoice: index (counting from 0) of the inital choice.
     For external CSS styling use class .dropdown, or give the dropdown an id and use #(id).'''
-    def __init__(self, choices, onchange, initialchoice=None, id=None):
+    def __init__(self, choices, onchange, initialchoice=None, className=None, id=None):
         html.SELECT.__init__(self, "", Class="dropdown")
         self <= (html.OPTION(text) for text in choices)
         self.bind("change", onchange)
         if initialchoice: self.selectedIndex = initialchoice
+        if className: self.classList.add(className)
         if id: self.id = id
 
 class ListBox(html.SELECT):
@@ -157,12 +165,13 @@ class ListBox(html.SELECT):
     size: number of choices to be displayed
     initialchoice: index (counting from 0) of the inital choice.
     For external CSS styling use class .listbox, or give the listbox an id and use #(id).'''
-    def __init__(self, choices, onchange, size=None, initialchoice=None, id=None):
+    def __init__(self, choices, onchange, size=None, initialchoice=None, className=None, id=None):
         html.SELECT.__init__(self, "", Class="listbox")
         self <= (html.OPTION(text) for text in choices)
         self.bind("change", onchange)
         self.size = size if size else len(choices)
         self.selectedIndex = initialchoice if initialchoice else -1
+        if className: self.classList.add(className)
         if id: self.id = id
 
 class InputBox(html.INPUT):
@@ -171,11 +180,12 @@ class InputBox(html.INPUT):
     enterkeyaction: function to be called if the Enter key is pressed. Takes the string value of the input as argument.
     Optional parameter:
     style: dictionary containing any CSS styling required'''
-    def __init__(self, enterkeyaction, style=None, id=None):
-        html.INPUT.__init__(self)
+    def __init__(self, enterkeyaction, style=None, className=None, id=None):
+        html.INPUT.__init__(self, Class="inputbox")
         if style: self.style = style
         self.enterkeyaction = enterkeyaction
         self.bind("keypress", self.onKeypress)
+        if className: self.classList.add(className)
         if id: self.id = id
 
     def onKeypress(self, event):
@@ -190,7 +200,7 @@ class SpinControl(html.DIV):
     action: function to be called when the value is changed. Takes one parameter, the current value of the control.
     Optional parameter:
     stepvalue: the amount by which the value is increased or decreased (default is 1)'''
-    def __init__(self, initialvalue, minvalue, maxvalue, action, stepvalue=1, id=None):
+    def __init__(self, initialvalue, minvalue, maxvalue, action, stepvalue=1, className=None, id=None):
         decrease = html.IMG(src=minus_b64, id="minus", style={"height":"100%", "float":"left"})
         decrease.bind("click", self.ondecrease)
         increase = html.IMG(src=plus_b64, id="plus", style={"height":"100%", "float":"right"})
@@ -204,6 +214,7 @@ class SpinControl(html.DIV):
         styledict = {"border":"1px solid blue", "height":"1.1em", "width":f"{widthems}em", "text-align":"center"}
         html.DIV.__init__(self,[decrease, self.valuespan, increase], Class="spincontrol", style=styledict)
         self.action = action
+        if className: self.classList.add(className)
         if id: self.id = id
 
     def setValue(self, n):
@@ -223,10 +234,10 @@ class SpinControl(html.DIV):
 class Panel(html.DIV):
     '''Just a container with a default border. Optional parameters:
     items: contents of the panel
-    border: border of the panel, in CSS format (use None for no border)
-    align: text-align, in CSS format (use none to leave as default)
+    border: border of the panel, in CSS format (use None for no border or to set in external spreadsheet)
+    align: text-align, in CSS format
     title: heading at the top of the panel. '''
-    def __init__(self, items=None, border="1px solid white", align=None, className=None, title=None, id=None):
+    def __init__(self, items=None, border="1px solid white", align=None, title=None, className=None, id=None):
         html.DIV.__init__(self, "", Class="panel")
         if className: self.classList.add(className)
         if id: self.id = id
@@ -259,11 +270,12 @@ class GridPanel(html.DIV):
     columns, rows: size of the grid
     Optional parameter:
     items: contents of the grid'''
-    def __init__(self, columns, rows, items=None, id=None):
+    def __init__(self, columns, rows, items=None, className=None, id=None):
         html.DIV.__init__(self, "", Class="gridpanel", style={"display":"grid", "justify-content":"center", "align-items":"center"})
         self.style.gridTemplateColumns = " ".join(["auto"]*columns)
         self.style.gridTemplateRows = " ".join(["auto"]*rows)
         if items: self <= items
+        if className: self.classList.add(className)
         if id: self.id = id
 
 class Button(html.BUTTON):
@@ -274,11 +286,12 @@ class Button(html.BUTTON):
     Optional parameters:
     bgcolour: background colour of the button.
     tooltip: text displayed when hovering over the button'''
-    def __init__(self, text, handler, bgcolour=None, tooltip=None, id=None):
+    def __init__(self, text, handler, bgcolour=None, tooltip=None, className=None, id=None):
         html.BUTTON.__init__(self, text, type="button", Class="button")
         self.bind("click", handler)
         if bgcolour: self.style.backgroundColor = bgcolour
         if tooltip: self.title = tooltip
+        if className: self.classList.add(className)
         if id: self.id = id
 
 class ImageButton(Button):
@@ -289,18 +302,18 @@ class ImageButton(Button):
     Optional parameters:
     bgcolour: background colour of the button.
     tooltip: text displayed when hovering over the button'''
-    def __init__(self, icon, handler, bgcolour=None, tooltip=None, id=None):
-        Button.__init__(self, "", handler, bgcolour, tooltip, id)
+    def __init__(self, icon, handler, bgcolour=None, tooltip=None, className=None, id=None):
+        Button.__init__(self, "", handler, bgcolour, tooltip, className, id)
         self <= html.IMG(src=icon, style={"margin":"0px"})
-        self.className = "imagebutton"
+        self.classList.add("imagebutton")
 
 class ToggleButton(Button):
     '''Button which remains depressed when clicked, until clicked again or raised by other means.
     For parameters see Button.'''
-    def __init__(self, text, handler, bgcolour=None, tooltip=None, id=None):
-        Button.__init__(self, text, self.onClick, bgcolour, tooltip, id)
-        self.className = "togglebutton"
-        self._selected = None
+    def __init__(self, text, handler, bgcolour=None, tooltip=None, className=None, id=None):
+        Button.__init__(self, text, self.onClick, bgcolour, tooltip, className, id)
+        self.classList.add("togglebutton")
+        #self._selected = None
         self.selected = False
         self.handler = handler
 
@@ -322,9 +335,19 @@ class ToggleButton(Button):
         self.selected = False if self.selected else True
         self.handler(event)
 
+class ToggleImageButton(ToggleButton):
+    '''Button with an image.  The button remains depressed when clicked, until clicked again or raised by other means.
+    For parameters see ImageButton.'''
+    def __init__(self, icon, handler, bgcolour=None, tooltip=None, className=None, id=None):
+        ToggleButton.__init__(self, "", handler, bgcolour, tooltip, className, id)
+        #self.style.padding = "0px"
+        self <= html.IMG(src=icon)
+        self.classList.add("toggleimagebutton")
+
 class RadioButton(html.SPAN):
-    def __init__(self, radiogroup, radioid, label, selected=False, tooltip=None, action=None, id=None):
+    def __init__(self, radiogroup, radioid, label, selected=False, tooltip=None, action=None, className=None, id=None):
         html.SPAN.__init__(self)
+        if className: self.classList.add(className)
         objid = id if id else f"{radiogroup}_{radioid}"
         self.button = html.INPUT(type="radio", name=radiogroup, value=radioid, id=objid)
         self.label = html.LABEL(label)
@@ -337,7 +360,7 @@ class RadioButton(html.SPAN):
         if action: self.button.bind("change", action)
 
 class CheckBox(html.SPAN):
-    def __init__(self, label, objid, selected=False, tooltip=None, action=None):
+    def __init__(self, label, objid, selected=False, tooltip=None, action=None, className=None):
         html.SPAN.__init__(self)
         self.button = html.INPUT(type="checkbox", name=objid, id=objid)
         self.label = html.LABEL(label)
@@ -348,15 +371,7 @@ class CheckBox(html.SPAN):
             self.button.title = tooltip
             self.label.title = tooltip
         if action: self.button.bind("change", action)
-
-class ToggleImageButton(ToggleButton):
-    '''Button with an image.  The button remains depressed when clicked, until clicked again or raised by other means.
-    For parameters see ImageButton.'''
-    def __init__(self, icon, handler, bgcolour=None, tooltip=None, id=None):
-        ToggleButton.__init__(self, "", handler, bgcolour, tooltip, id)
-        #self.style.padding = "0px"
-        self <= html.IMG(src=icon)
-        self.className = "toggleimagebutton"
+        if className: self.classList.add(className)
 
 class ColourPickerButton(html.BUTTON):
     '''Button which opens a colour picker, and then takes on the colour which is selected.
@@ -366,8 +381,10 @@ class ColourPickerButton(html.BUTTON):
     Optional parameters:
     label: Text on the button
     initialcolour: initial background colour of the button (in rgb() format). If omitted the default colour rgb(242, 241, 240) is used.'''
-    def __init__(self, returnaction, label="", initialcolour=None, id=None):
+    def __init__(self, returnaction, label="", initialcolour=None, className=None, id=None):
         html.BUTTON.__init__(self, label, type="button", title="Open Colour Picker...", Class="button")
+        self.classList.add("colourpickerbutton")
+        if className: self.classList.add(className)
         self.style.backgroundColor = initialcolour if initialcolour else "rgb(242, 241, 240)"
         if id: self.id = id
         self.bind("click", self.onClick)
@@ -392,8 +409,10 @@ class ColourPickerImageButton(html.BUTTON):
     Required parameters:
     icon: the path to its image
     returnaction: function to be called after a colour is selected. This function takes one argument: the colour selected.'''
-    def __init__(self, icon, returnaction, id=None):
+    def __init__(self, icon, returnaction, className=None, id=None):
         html.BUTTON.__init__(self, html.IMG(src=icon), type="button", title="Open Colour Picker...", Class="imagebutton")
+        self.classList.add("colourpickerimagebutton")
+        if className: self.classList.add(className)
         self.bind("click", self.onClick)
         self.returnaction = returnaction
         if id: self.id = id
@@ -408,11 +427,13 @@ class ImageFromSVGButton(html.BUTTON):
     '''Button which opens an OverlayPanel showing a png image created from an SVG image.
     Required parameter:
     svgimage: the image to be converted to png.'''
-    def __init__(self, svgimage, preprocess=None, id=None):
+    def __init__(self, svgimage, preprocess=None, className=None, id=None):
         html.BUTTON.__init__(self, html.IMG(src=copy_b64), type="button", title="Copy or Save...", Class="imagebutton")
         self.bind("click", self.onClick)
         self.svgimage = svgimage
         self.preprocess = preprocess if preprocess else None
+        if className: self.classList.add(className)
+        if id: self.id = id
 
     def onClick(self, event):
         global imagefromsvg
@@ -511,7 +532,7 @@ class DialogBox(html.DIV):
     returnaction: A function to be called when the dialog is finished with
     content: The content of the box
     style:  If this is set to "standard", the panel will be light grey with a dark grey titlebar.
-            If not set, styling can be done using an external CSS stylesheet for classes .overlaypanel and .titlebar
+            If not set, styling can be done using an external CSS stylesheet for classes .dialogbox and .titlebar
     size: a tuple (width, height) in CSS units.
     Available methods: show, hide, close (the last two are identical unless amended in a subclass).'''
     def __init__(self, title, returnaction=None, content=None, style=None, size=None, id=None):
@@ -549,9 +570,10 @@ class DialogBox(html.DIV):
         self.hide()
 
 class AlertDialog(DialogBox):
+    '''Not intended to be created by end user.  Use the showalert() function to display an alert.'''
     def __init__(self):
         self.messagediv = html.DIV(style={"background-color":"inherit", "margin":"1em 1em 3em 1em"})
-        super().__init__("Message", content=self.messagediv, style="standard")
+        super().__init__("Message", content=self.messagediv, style=Global.alertStyle, id="alertdialog")
         self.okbutton = Button("OK", self.close)
         self.okbutton.style = {"position":"absolute", "right":"5px", "bottom":"5px"}
         self <= self.okbutton
@@ -563,12 +585,13 @@ class AlertDialog(DialogBox):
         self.okbutton.focus()
 
 class PromptDialog(DialogBox):
+    '''Not intended to be created by end user.  Use the showprompt() function to display a prompt dialog.'''
     def __init__(self):
         self.question = html.P(style={"margin-right":"1em"}, id="query")
         self.entrybox = html.INPUT(id="reply")
         self.entrybox.bind("keypress", self.onKeypress)
         self.querydiv = html.DIV([self.question, self.entrybox], style={"background-color":"inherit", "margin-top":"1em", "margin-bottom":"3em"})
-        super().__init__("Query", content=self.querydiv, style="standard")
+        super().__init__("Query", content=self.querydiv, style=Global.promptStyle, id="promptdialog")
         okbutton = Button("OK", self.respond)
         okbutton.style = {"position":"absolute", "right":"5px", "bottom":"5px"}
         self <= okbutton
@@ -693,6 +716,7 @@ class FileOpenButton(html.BUTTON):
     def __init__(self, returnaction, extlist=[], initialfolder=".", id=None):
         global fileopendialog
         html.BUTTON.__init__(self, html.IMG(src=open_b64), type="button", title="Open File...", id=id, Class="imagebutton")
+        self.classList.add("fileopenbutton")
         self.bind("click", self.onClick)
         if not fileopendialog: fileopendialog = FileOpenDialog(returnaction, extlist)
         self.initialfolder = initialfolder
@@ -714,6 +738,7 @@ class FileSaveAsButton(html.BUTTON):
     def __init__(self, preparefile, returnaction=None, extlist=[], defaultextension=None, initialfolder=".", id=None):
         global filesavedialog
         html.BUTTON.__init__(self, html.IMG(src=saveas_b64), type="button", title="Save File As...", id=id, Class="imagebutton")
+        self.classList.add("filesaveasbutton")
         self.bind("click", self.onClick)
         if not filesavedialog: filesavedialog = FileSaveDialog(returnaction, extlist, defaultextension)
         self.initialfolder = initialfolder
@@ -731,6 +756,7 @@ class FileSaveButton(html.BUTTON):
     def __init__(self, preparefile, returnaction=None, extlist=[], defaultextension=None, initialfolder=".", id=None):
         global filesavedialog
         html.BUTTON.__init__(self, html.IMG(src=save_b64), type="button", title="Save File", id=id, Class="imagebutton")
+        self.classList.add("filesavebutton")
         self.bind("click", self.onClick)
         if not filesavedialog: filesavedialog = FileSaveDialog(returnaction, extlist, defaultextension)
         self.initialfolder = initialfolder
@@ -749,6 +775,7 @@ class UserFileOpenButton(FileOpenButton):
     For the parameters, see FileOpenButton.'''
     def __init__(self, returnaction, extlist=[], id=None):
         FileOpenButton.__init__(self, returnaction, extlist, id=id)
+        self.classList.add("userfilebutton")
 
     def onClick(self, event):
         if currentuser is None:
@@ -761,6 +788,7 @@ class UserFileSaveAsButton(FileSaveAsButton):
     For the parameters, see FileSaveAsButton.'''
     def __init__(self, preparefile, returnaction=None, extlist=[], defaultextension=None, id=None):
         FileSaveAsButton.__init__(self, preparefile, returnaction, extlist, defaultextension, id=id)
+        self.classList.add("userfilebutton")
 
     def onClick(self, event):
         if currentuser is None:
@@ -774,6 +802,7 @@ class UserFileSaveButton(FileSaveButton):
     For the parameters, see FileSaveAsButton.'''
     def __init__(self, preparefile, returnaction=None, extlist=[], defaultextension=None, id=None):
         FileSaveButton.__init__(self, preparefile, returnaction, extlist, defaultextension, id=id)
+        self.classList.add("userfilebutton")
 
     def onClick(self, event):
         if currentuser is None:
@@ -793,6 +822,7 @@ class LoginButton(html.BUTTON):
     def __init__(self, returnaction=None, id=None):
         global logindialog
         html.BUTTON.__init__(self, html.IMG(src=login_b64), type="button", title="Log In...", Class="imagebutton")
+        self.classList.add("loginbutton")
         self.bind("click", self.onClick)
         if not logindialog: logindialog = LoginDialog("Please type your username below:", returnaction)
         if id: self.id = id
@@ -1037,6 +1067,10 @@ class FileSaveDialog(FileDialog):
         self.hide()
 
 def showalert(message, title=None):
+    '''Similar to javascript alert function.
+    By default, standard dialog box styling will be used.
+    If the variable Global.alertStyle is set to None, the alert will be styled using CSS styling for the .dialogbox class.
+    If desired, this can be overridden by setting up styling for the id #alertdialog.'''
     global alertdialog
     try:
         alertdialog.showmessage(message, title)
@@ -1045,6 +1079,11 @@ def showalert(message, title=None):
         alertdialog.showmessage(message, title)
 
 def showprompt(message, action=None, title=None, default=None):
+    '''Similar to javascript prompt function.
+    default is the text which will appear in the prompt box by default.
+    By default, standard dialog box styling will be used.
+    If the variable Global.promptStyle is set to None,  the prompt will be styled using CSS styling for the .dialogbox class.
+    If desired, this can be overridden by setting up styling for the id #promptdialog.'''
     global promptdialog
     try:
         promptdialog.showquery(message, action, title, default)

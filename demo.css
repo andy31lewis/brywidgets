@@ -1,13 +1,23 @@
 html {
-    height: 100%;
-    margin: 0px;
+    font-family: arial, sans-serif;
+    font-size: 2.5vmin;
 }
 
 body {
-    min-height: 100%;
     margin: 0px;
-    font-family: arial, sans-serif;
-    font-size: 2.5vmin;
+}
+
+.notebooktabrow {
+    background-color: oldlace;
+}
+
+.notebooktab {
+    min-width: 10%;
+}
+
+.notebookpage {
+    overflow: auto;
+    padding: 2.5vmin;
 }
 
 h1 {
@@ -15,26 +25,13 @@ h1 {
     margin-top: 0px;
 }
 
-.notebook {
-    height: 100%;
-}
-
-.notebooktabrow {
-    background-color: oldlace;
-}
-
-.notebookpage {
-    height: 90vh;
-    padding: 2.5vh;
+p {
+    margin: 1vmin 0;
 }
 
 .panel {
     text-align: center;
-}
-
-#panel1, #panel2 {
     width: 50%;
-    height: 75vh;
 }
 
 .paneltitle {
@@ -42,35 +39,37 @@ h1 {
     font-weight: bold;
 }
 
-.listbox {
-    width: 25vw;
-    font-size: 1em;
-}
-
-#spinner {
+.spincontrol {
     display: inline-block;
-    background-color: lightgrey;
+    background-color: ivory;
     margin: 0.5vmin;
 }
 
+.listbox, .dropdown {
+    width: 50%;
+    margin:auto;
+    font-size: 1rem;
+}
+
 .dropdown {
-    font-size: 1em;
+    background-color: cyan;
+    border-width: 0px
 }
 
 textarea {
     display: block;
+    height: 90vh;
     width: 90%;
-    height: 100%;
     margin: auto;
 }
 
 #usertext {
     height: 25vh;
-    width: 25vw
+    width: 50%;
 }
 
 .button, .imagebutton, .togglebutton {
-    font-size: 1em;
+    font-size: 1rem;
     padding: 0px;
     margin: 0.5vmin 2vmin;
 }
@@ -79,6 +78,7 @@ textarea {
     height: 5vmin;
 }
 
-p {
-    margin: 1vmin 0;
+.userfilebutton > img {
+    border: 1px solid red;
 }
+

@@ -12,10 +12,11 @@ def countsongs(event):
     document["songcount"].text = "Number of songs by " + artist +": " + str(list(artistdict.values()).count(artist))
 
 def changecolour(colour, id):
-    panel1.style.backgroundColor=colour
+    document["usertext"].style.backgroundColor=colour
 
 def toggleclick(event):
     togglebutton.text = "Button down" if togglebutton.selected else "Button is Up!"
+    ws.showprompt("Button has been toggled.", title="Message")
 
 def showfile(filecontent, filename):
     document["usertext"].value = filecontent
@@ -35,7 +36,7 @@ def setrowcount(n):
 #################################################
 
 page1 = ws.NotebookPage("Demo", "powderblue", id="page1")
-page2 = ws.NotebookPage("Brython code", "khaki", html.TEXTAREA(open("demo.py").read()), id="page2")
+page2 = ws.NotebookPage("Brython code", "khaki", html.TEXTAREA(open("demo.py").read()), tabwidth=None, id="page2")
 page3 = ws.NotebookPage("CSS", "lightgreen", html.TEXTAREA(open("demo.css").read()), id="page3")
 page4 = ws.NotebookPage("HTML", "lightpink", html.TEXTAREA(open("demo.html").read()), id="page4")
 document <= ws.Notebook([page1, page2, page3, page4])
@@ -50,6 +51,7 @@ panel1 = ws.Panel(title="The 100 greatest singles of all time - click to find th
 spincontrol = ws.SpinControl(10, 5, 15, setrowcount, id="spinner")
 listbox = ws.ListBox(artistdict.keys(), showartist, 10)
 togglebutton = ws.ToggleButton("Button is Up!", toggleclick)
+
 panel1 <= ws.ColumnPanel([html.P("(This Panel shows a SpinControl, a ListBox, a Dropdown, a ColourPickerButton and a ToggleButton.)"),
             html.P(["Number of rows:", spincontrol]), listbox, html.P("&nbsp", id="artist"),
             ws.DropDown(sorted(set(artistdict.values())), countsongs), html.P("&nbsp", id="songcount"),

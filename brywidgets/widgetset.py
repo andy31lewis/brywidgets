@@ -101,10 +101,10 @@ class Notebook(html.DIV):
 
     def addpage(self, page):
         self <= page
-        tab = NotebookTab(self, len(self.pagelist), page.title, self.tabheight, page.tabwidth)
-        tab.style.backgroundColor = page.style.backgroundColor
-        if page.id: tab.id = page.id+"_tab"
-        self.tabrow.insertBefore(tab, self.clearfloat)
+        page.tab = NotebookTab(self, len(self.pagelist), page.title, self.tabheight, page.tabwidth)
+        page.tab.style.backgroundColor = page.style.backgroundColor
+        if page.id: page.tab.id = page.id+"_tab"
+        self.tabrow.insertBefore(page.tab, self.clearfloat)
         page.style.display="block" if len(self.pagelist)==0 else "none"
         self.pagelist.append(page)
 
@@ -132,7 +132,7 @@ class NotebookTab(html.DIV):
         self.index = index
         self.bind("click", self.select)
 
-    def select(self, event):
+    def select(self, event=None):
         for p in self.notebook.pagelist:
             p.style.display="none"
         self.notebook.pagelist[self.index].style.display="block"
@@ -193,7 +193,7 @@ class SpinControl(html.DIV):
     action: function to be called when the value is changed. Takes one parameter, the current value of the control.
     Optional parameter:
     stepvalue: the amount by which the value is increased or decreased (default is 1)'''
-    def __init__(self, initialvalue, minvalue, maxvalue, action, stepvalue=1, className=None, id=None):
+    def __init__(self, initialvalue, minvalue, maxvalue, action=None, stepvalue=1, className=None, id=None):
         decrease = html.IMG(src=minus_b64, id="minus", style={"height":"100%", "float":"left"})
         decrease.bind("click", self.ondecrease)
         increase = html.IMG(src=plus_b64, id="plus", style={"height":"100%", "float":"right"})
@@ -217,12 +217,12 @@ class SpinControl(html.DIV):
     def ondecrease(self, event):
         if self.currentvalue-self.stepvalue >= self.minvalue: self.currentvalue -= self.stepvalue
         self.valuespan.text = str(self.currentvalue)
-        self.action(self.currentvalue)
+        if self.action: self.action(self.currentvalue)
 
     def onincrease(self, event):
         if self.currentvalue+self.stepvalue <= self.maxvalue: self.currentvalue += self.stepvalue
         self.valuespan.text = str(self.currentvalue)
-        self.action(self.currentvalue)
+        if self.action: self.action(self.currentvalue)
 
 class Panel(html.DIV):
     '''Just a container with a default border. Optional parameters:

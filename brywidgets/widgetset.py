@@ -129,14 +129,14 @@ class NotebookTab(html.DIV):
         html.DIV.__init__(self, html.P(title, style={"margin":"0.4em"}), Class="notebooktab", style={"height":height, "float":"left", "cursor":"pointer"})
         if width: self.style.width = width
         self.notebook = notebook
-        self.index = index
+        self.tabindex = index
         self.bind("click", self.select)
 
     def select(self, event=None):
         for p in self.notebook.pagelist:
             p.style.display="none"
-        self.notebook.pagelist[self.index].style.display="block"
-        self.notebook.pagelist[self.index].update()
+        self.notebook.pagelist[self.tabindex].style.display="block"
+        self.notebook.pagelist[self.tabindex].update()
 
 class DropDown(html.SELECT):
     '''Dropdown list of options.
@@ -570,13 +570,13 @@ class DialogBox(html.DIV):
         self.overlay = Overlay(self)
         document <= self.overlay
 
-    def show(self):
+    def show(self, event=None):
         self.overlay.style.visibility = "visible"
 
-    def hide(self):
+    def hide(self, event=None):
         self.overlay.style.visibility = "hidden"
 
-    def close(self, event):
+    def close(self, event=None):
         self.hide()
 
 class AlertDialog(DialogBox):

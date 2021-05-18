@@ -101,7 +101,7 @@ class Notebook(html.DIV):
 
     def addpage(self, page):
         self <= page
-        page.tab = NotebookTab(self, len(self.pagelist), page.title, self.tabheight, page.tabwidth)
+        page.tab = NotebookTab(self, len(self.pagelist), page.tabtitle, self.tabheight, page.tabwidth)
         page.tab.style.backgroundColor = page.style.backgroundColor
         if page.id: page.tab.id = page.id+"_tab"
         self.tabrow.insertBefore(page.tab, self.clearfloat)
@@ -113,7 +113,7 @@ class NotebookPage(html.DIV):
     Optionally include content at creation time, or else add it later.'''
     def __init__(self, title, bgcolour, content=None, tabwidth="10%", className=None, id=None):
         html.DIV.__init__(self, "", style={"background-color":bgcolour}, Class="notebookpage")
-        self.title = title
+        self.tabtitle = title
         self.tabwidth = tabwidth
         if className: self.classList.add(className)
         if id: self.id = id

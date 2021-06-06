@@ -18,7 +18,7 @@ There is also one new widget: a `spincontrol` (to provide a more consistent inte
 
 A collection of widgets for including in Brython projects.
 
-For a demo, see [this page](https://andy31lewis.github.io/brywidgets/demo.html), which illustrates most of the functionality.
+For a demo, see [this page](http://mathsanswers.org.uk/oddments/brywidgets/demo.html), which illustrates most of the functionality.
 
 To use, there are two options:
 

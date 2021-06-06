@@ -872,7 +872,7 @@ class LoginDialog(DialogBox):
         request = ajax.ajax()
         request.bind("complete", oncomplete)
         request.open("POST", "brywidgets/checkfolderexists.cgi", True)
-        request.set_header('content-type','application/x-www-form-urlencoded')
+        #request.set_header('content-type','application/x-www-form-urlencoded')
         request.send({"username":username})
 
     def openusernamedialog(self, event):
@@ -909,7 +909,7 @@ class UsernameDialog(DialogBox):
         request = ajax.ajax()
         request.bind("complete", oncomplete)
         request.open("POST", "brywidgets/checkfolderexists.cgi", True)
-        request.set_header('content-type','application/x-www-form-urlencoded')
+        #request.set_header('content-type','application/x-www-form-urlencoded')
         request.send({"username":username})
 
     def createusername(self, username):
@@ -923,7 +923,7 @@ class UsernameDialog(DialogBox):
         request = ajax.ajax()
         request.bind("complete", oncomplete)
         request.open("POST", "brywidgets/createfolder.cgi", True)
-        request.set_header('content-type','application/x-www-form-urlencoded')
+        #request.set_header('content-type','application/x-www-form-urlencoded')
         request.send({"username":username})
 
 class FileDialog(DialogBox):
@@ -968,7 +968,7 @@ class FileDialog(DialogBox):
         request = ajax.ajax()
         request.bind("complete", self.populatebox)
         request.open("POST", "brywidgets/sendfilelist.cgi", True)
-        request.set_header('content-type','application/x-www-form-urlencoded')
+        #request.set_header('content-type','application/x-www-form-urlencoded')
         request.send({"folder":folder})
 
     def populatebox(self, request):
@@ -1071,7 +1071,7 @@ class FileSaveDialog(FileDialog):
         request = ajax.ajax()
         #request.bind("complete", self.closedialog)
         request.open("POST", "brywidgets/savefile.cgi", True)
-        request.set_header('content-type','application/x-www-form-urlencoded')
+        #request.set_header('content-type','application/x-www-form-urlencoded')
         request.send({"filepath":filepath, "filetosave":filetosave})
 
     def closedialog(self, request):
